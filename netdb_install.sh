@@ -3,9 +3,10 @@
 # Install and Configure NetDB on CentOS/RHEL Linux
 
 # Install dependencies and packages
-yum -y install gcc unzip make bzip2 curl lynx ftp patch mariadb mariadb-server httpd httpd-tools perl epel-release
+yum -y install epel-release
 
-yum install perl-List-MoreUtils perl-DBI perl-Net-DNS perl-Math-Round perl-Module-Implementation \
+yum install -y gcc unzip make bzip2 curl lynx ftp patch mariadb mariadb-server httpd httpd-tools perl
+perl-List-MoreUtils perl-DBI perl-Net-DNS perl-Math-Round perl-Module-Implementation \
 perl-Params-Validate perl-DateTime-Locale perl-DateTime-TimeZone perl-DateTime \
 perl-DateTime-Format-MySQL perl-Time-HiRes perl-Digest-HMAC perl-Digest-SHA1 \
 perl-Net-IP perl-AppConfig perl-Proc-Queue perl-Proc-ProcessTable perl-NetAddr-IP perl-IO-Socket-IP \
@@ -16,7 +17,8 @@ useradd netdb
 usermod -aG wheel netdb
 
 # Create directory and update permission
-tar -xzvf netdb.tar.gx -C /opt/
+# Download netdb-1.13.2.tar.gz from Sourceforge https://sourceforge.net/projects/netdbtracking/files/latest/download
+tar -xzvf netdb-1.13.2.tar.gz -C /opt/
 chown -R netdb.netdb /opt/netdb
 mkdir -pv /var/log/netdb
 chown -R netdb.apache /var/log/netdb
@@ -28,9 +30,13 @@ ln -s /opt/netdb/netdbctl.pl /usr/local/bin/netdbctl
 # Copy netdb-logrotate script 
 cp /opt/netdb/extra/netdb-logrotate /etc/logrotate.d/
 
-Configure Mariadb
+#TODO Streamline MariaDB portion, users must be prompt to create their passwords
+#####################
+# Configure Mariadb #
+#####################
 systemctl enable mariadb && systemctl start mariadb
 mysql_secure_installation
+
 mysql -u root -p
 create database netdb;
 use netdb;
@@ -65,6 +71,12 @@ cp /opt/netdb/netdb.cgi.pl /var/www/cgi-bin/netdb.pl
 # Create netdb web UI credentials
 touch /var/www/html/netdb/netdb.passwd
 htpasswd -c /var/www/html/netdb/netdb.passwd netdb
+
+#TODO Create virtual host
+
+#TODO Create SSL certificate
+
+#TODO Configure MGRT 
 
 # Create control log
 touch /var/www/html/netdb/control.log
