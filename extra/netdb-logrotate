@@ -5,5 +5,5 @@
         compress
         delaycompress
         notifempty
-        create 640 netdb www-data
+        create 640 netdb apache
 }

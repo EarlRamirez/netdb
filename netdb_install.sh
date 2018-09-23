@@ -2,6 +2,15 @@
 
 # Install and Configure NetDB on CentOS/RHEL Linux
 
+# Install dependencies and packages
+yum -y install gcc unzip make bzip2 curl lynx ftp patch mariadb mariadb-server httpd httpd-tools perl epel-release
+
+yum install perl-List-MoreUtils perl-DBI perl-Net-DNS perl-Math-Round perl-Module-Implementation \
+perl-Params-Validate perl-DateTime-Locale perl-DateTime-TimeZone perl-DateTime \
+perl-DateTime-Format-MySQL perl-Time-HiRes perl-Digest-HMAC perl-Digest-SHA1 \
+perl-Net-IP perl-AppConfig perl-Proc-Queue perl-Proc-ProcessTable perl-NetAddr-IP perl-IO-Socket-IP \
+perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN
+
 # Create netdb user
 useradd netdb
 usermod -aG wheel netdb
@@ -38,55 +47,33 @@ exit
 mkdir /usr/lib64/perl5/Net/
 ln -s /opt/netdb/NetDBHelper.pm /usr/lib64/perl5/NetDBHelper.pm
 ln -s /opt/netdb/NetDB.pm /usr/lib64/perl5/NetDB.pm
-
-# Install dependencies and packages
-yum -y install gcc unzip make bzip2 curl lynx ftp patch
-
-yum install perl-List-MoreUtils perl-DBI perl-Net-DNS perl-Math-Round perl-Module-Implementation \
-perl-Params-Validate perl-DateTime-Locale perl-DateTime-TimeZone perl-DateTime \
-perl-DateTime-Format-MySQL perl-Time-HiRes perl-Digest-HMAC perl-Digest-SHA1 \
-perl-Net-IP perl-AppConfig perl-Proc-Queue perl-Proc-ProcessTable perl-NetAddr-IP perl-IO-Socket-IP \
-perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN
-
-NetDB Perl module         req  CentOS/RHEL package
----------------------	  ----------------------
-install List::MoreUtils			perl-List-MoreUtils
-install DBI						perl-DBI
-install Net::DNS				perl-Net-DNS
-install Math::Round				perl-Math-Round
-install Module::Implementation	perl-Module-Implementation
-install Attribute::Handlers
-install Params::Validate		perl-Params-Validate
-install DateTime::Locale		perl-DateTime-Locale
-install DateTime::TimeZone		perl-DateTime-TimeZone
-install DateTime				perl-DateTime
-install DateTime::Format::MySQL	perl-DateTime-Format-MySQL
-install Time::HiRes				perl-Time-HiRes
-install Data::UUID				
-install Digest::HMAC			perl-Digest-HMAC
-install Digest::SHA1			perl-Digest-SHA1
-install Net::MAC::Vendor 
-install Net::SSH::Expect
-install Net::Telnet::Cisco  ## Only install if Telnet is required
-install Net::IP					perl-Net-IP
-install AppConfig				perl-AppConfig				
-install Proc::Queue				perl-Proc-Queue
-install Proc::ProcessTable		perl-Proc-ProcessTable
-install File::Flock				
-install NetAddr::IP				perl-NetAddr-IP
-install IO::Socket::INET		perl-IO-Socket-IP # May still need to install IO::Socket::INET module for backward compatibility
-install IO::Socket::INET6		perl-IO-Socket-INET6
-install ExtUtils::Constant			
-install ExtUtils::CBuilder		perl-ExtUtils-CBuilder
-install Socket					perl-Socket
-install YAML					perl-YAML
-
  
-cpan Attribute::Handlers
-cpan Data::UUID
-cpan Net::MAC::Vendor
-cpan Net::SSH::Expect
-cpan File::Flock
-cpan ExtUtils::Constant
+# Install remaining perl modules
+for mod in Attribute::Handlers Data::UUID Net::MAC::Vendor Net::SSH::Expect File::Flock ExtUtils::Constant
+do cpan $mod
+done;
 
+# Create directories and copy required files
+cp /opt/netdb/netdb.conf /etc/
+touch /opt/netdb/data/devicelist.csv
+cp /opt/netdb/netdb-cgi.conf /etc/
+mkdir -pv /var/www/html/netdb
+touch /var/www/html/netdb/netdbReport.csv
+cp -r /opt/netdb/extra/depends /var/www/html/netdb/
+cp /opt/netdb/netdb.cgi.pl /var/www/cgi-bin/netdb.pl
+
+# Create netdb web UI credentials
+touch /var/www/html/netdb/netdb.passwd
+htpasswd -c /var/www/html/netdb/netdb.passwd netdb
+
+# Create control log
+touch /var/www/html/netdb/control.log
+echo "Nothing here yet!!" > /var/www/html/netdb/control.log
+
+# Update document root permission and fire up the web server
+chown -R apache:apache /var/www/html/netdb
+systemctl enable httpd && systemctl start httpd
+
+# Create firewall rule
+firewall-cmd --permanent --add-service=http && firewall-cmd --reload
 
