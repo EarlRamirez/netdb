@@ -1,0 +1,555 @@
+========================================= 
+Network Tracking Database (NetDB) Install
+=========================================
+
+=================
+About the Install
+=================
+
+See README for requirements and important install information
+
+
+=========
+Upgrading
+=========
+
+See UPGRADE
+
+
+=================
+ INSTALL PROCESS
+=================
+
+==== Prepare the files 
+
+- Create a netdb user on your system
+
+adduser netdb
+
+- Untar the netdb.tar.gz file to /opt
+
+tar zxvf netdb.tar.gz -C /opt/
+
+- Create netdb directories and set permissions. I usually add the netdb user to
+  the adm group to get logging working
+
+mkdir /var/log/netdb
+chown -R netdb /opt/netdb/
+chgrp -R netdb /opt/netdb/
+chown netdb /var/log/netdb/
+chgrp www-data /var/log/netdb/
+
+usermod -a -G adm netdb
+
+- Create local/bin symlinks for netdb scripts:
+
+ln -s /opt/netdb/netdb.pl /usr/local/bin/netdb
+ln -s /opt/netdb/netdbctl.pl /usr/local/bin/netdbctl
+
+- Install netdb-logrotate in /etc/logrotate.d/
+
+cp /opt/netdb/extra/netdb-logrotate /etc/logrotate.d/
+
+
+==== Create the database in mysql on the local server
+
+- Check your linux MySQL install for these credentials, if you connect as root
+  on Debian it shouldn't require a password or -p unless someone has set one
+
+mysql -u root -p
+
+create database netdb;
+use netdb;
+source /opt/netdb/createnetdb.sql
+
+- If you are using the local MySQL database and not hosting this on an external
+  MySQL server, create a read-only user and an admin user
+
+- Change the password after "IDENTIFIED BY" from the default values, make sure
+  to update the /etc/netdb.conf with these new passwords
+
+CREATE USER 'netdbuser'@'localhost' IDENTIFIED BY 'netdb3742';
+GRANT SELECT ON *.* TO 'netdbuser'@'localhost';
+
+CREATE USER 'netdbadmin'@'localhost' IDENTIFIED BY 'netdbadmin3742';
+GRANT SELECT,INSERT,UPDATE,LOCK TABLES,SHOW VIEW,DELETE ON *.* TO 'netdbadmin'@'localhost';
+
+
+- Exit MySQL
+
+exit
+
+Note: Most will be fine with the default config, but if you have a very large
+network, you may want to look at the my.cnf file which increases memory
+allocated to MySQL and has several performance increases.
+
+
+==== MySQL User Setup Details for external database servers
+
+- If you pasted in the CREATE USER commands above and are hosting the MySQL
+  database on the local server, ignore this section
+
+- Give the netdbadmin user INSERT, SELECT, UPDATE and DELETE privileges
+
+- Give the netdbuser user SELECT only privileges (Can use the same user as
+  above, mainly for CGI use)
+
+- Update the config file with your username and passwords in the MySQL Database
+  Details section (instructions below)
+
+
+===== Install Perl Modules
+
+- Add NetDB Perl modules NetDBHelper.pm and NetDB.pm to your perl library path
+  (you may need to check your system or use /usr/local/lib/)
+
+mkdir /usr/lib/perl5/Net/
+ln -s /opt/netdb/NetDBHelper.pm /usr/lib/perl5/NetDBHelper.pm
+ln -s /opt/netdb/NetDB.pm /usr/lib/perl5/NetDB.pm
+
+
+===== Debian Lenny/Ubuntu Instructions (generalized instructions below):
+
+== Option #1 for Perl Modules Install on Debian and Ubuntu
+
+Debian Linux - lenny - Setup for NetDB
+Denny Fox - 1/19/2010
+
+These were necessary on a minimal fresh install of lenny to provide the packages to support NetDB and CPAN.
+
+NetDB Perl module         req  lenny package
+---------------------	  ----------------------
+List::MoreUtils		  liblist-moreutils-perl
+DBI                       libdbi-perl
+Net::DNS                  libnet-dns-perl
+DateTime		  libdatetime-perl
+DateTime::Format::MySQL	  libdatetime-format-mysql-perl
+Time::HiRes		  (should already be installed, included in package perl)
+		          - no man page but module is there
+Data::UUID		  libossp-uuid-perl
+Digest::HMAC		  libdigest-hmac-perl
+Digest::SHA1		  libdigest-sha1-perl
+Net::MAC::Vendor 	  install dependency libwww-perl then install via CPAN
+Net::SSH::Expect	  install dependency libexpect-perl then install via CPAN
+Net::Telnet::Cisco  	  libnet-telnet-cisco-perl
+Net::IP                   libnet-ip-perl
+AppConfig		  libappconfig-perl  
+Proc::Queue		  install via CPAN (Test::More dependency is part of perl-modules in the base install)
+Proc::ProcessTable        libproc-processtable-perl
+File::Flock		  libio-lockedfile-perl - no man page but module is there
+NetAddr::IP		  libnetaddr-ip-perl
+IO::Socket::INET	  (should already be installed, included in package perl-base)
+			   - no man page but module is there
+
+
+apt-get install liblist-moreutils-perl libdbi-perl libnet-dns-perl libdatetime-perl \
+libdatetime-format-mysql-perl libossp-uuid-perl libdigest-hmac-perl libdigest-sha1-perl libwww-perl \
+libexpect-perl libnet-telnet-cisco-perl libappconfig-perl libio-lockedfile-perl libnetaddr-ip-perl \
+libnet-ip-perl libio-socket-inet6-perl libfile-flock-perl libproc-processtable-perl
+
+apt-get will automatically take care of sub-dependencies on these 14 packages. On my system this
+resulted in 42 packages being installed.
+
+CPAN dependencies:
+
+apt-get install libyaml-perl unzip make bzip2 curl lynx ncftp ftp patch makepatch
+
+CPAN will work without some of these, but these packages will satisfy all the questions that a
+manual 'o conf init' will ask. Installing these will allow you to take the 'yes' option and let CPAN
+configure itself automatically.
+
+
+- CPAN Setup (do not do manual configure, instead choose auto):
+
+perl -MCPAN -e 'shell'
+
+Would you like me to configure as much as possible automatically? [yes]
+
+... CPAN configures itself ...
+cpan[1]> q
+
+- edit Config.pm to use the main ftp site as suggested:
+
+vi /etc/perl/CPAN/Config.pm (or /root/.cpan/CPAN/MyConfig.pm)
+Change
+  'urllist' => [],
+To
+  'urllist' => [q[ftp://ftp.perl.org/pub/CPAN/]],
+
+- Install remaining perl packages:
+
+perl -MCPAN -e 'shell'
+
+install Net::MAC::Vendor
+install Net::SSH::Expect
+install Proc::Queue
+
+quit
+
+
+===== Generalized Perl Modules Install (Non-Debian/Ubuntu)
+
+== Option #2 for Perl Modules Install
+
+- Install Required CPAN Modules:
+
+perl -MCPAN -e 'shell'
+o conf init
+
+Note: I usually use ftp://ftp.perl.org/pub/CPAN/ as my mirror, since so many mirrors have issues
+
+Modules to install on CentOS:
+install List::MoreUtils
+install DBI
+install Net::DNS
+install Math::Round
+install Module::Implementation
+install Attribute::Handlers
+install Params::Validate
+install DateTime::Locale
+install DateTime::TimeZone
+install DateTime
+install DateTime::Format::MySQL
+install Time::HiRes
+install Data::UUID
+install Digest::HMAC
+install Digest::SHA1
+install Net::MAC::Vendor 
+install Net::SSH::Expect
+install Net::Telnet::Cisco  ## Only install if Telnet is required
+install Net::IP
+install AppConfig
+install Proc::Queue
+install Proc::ProcessTable
+install File::Flock
+install NetAddr::IP
+install IO::Socket::INET
+install IO::Socket::INET6
+install ExtUtils::Constant
+install ExtUtils::CBuilder
+install Socket
+
+
+===== Configuration File
+
+-  Copy netdb.conf to /etc/ and edit the options for your environment 
+
+- Set the devuser, devpass, devuser2, and devpass2 variables.  Leave the
+  enablepasswd commented out and the script will not try to enable the session.
+
+- NetDB only needs level 5 priviledges to run and does not need enable level
+  access.  ASA support requires enable support to grab the ARP table, so it's
+  best to setup a privileged netdb user or change the ARP command's privilege
+  level to not require enable privileges on the ASA.
+
+- If you plan to enable vlan changes from the web interface, the netdb user will
+  need rights to do this.
+
+- Configure the use_telnet and use_ssh variables in the scraper section.
+  Enabling both will prefer ssh and fallback to telnet.  If you use forcessh or
+  forcetelnet in the devicelist file, these variables are ignored.  
+
+- Optionally tweak the mac_format, scraper_count and proc_delay settings.
+
+- If you are running vmware servers on trunk ports, see the use_trunks and max_macs section
+
+- Configure your Database Settings, if you don't want a read only user, use the same username and password
+
+- Optional: create a list of static IPs from your DHCP server and put them each on
+  a line in a file.  Then set the statics_file variable to this file location and
+  run netdbctl -s from cron (see below)
+
+  Bluecat DHCP users: There is a getstatics.sh script in the extra/ directory
+  to pull all static and DHCP reserved addresses from Bluecat to import in to
+  netdb.
+
+===== Create a /opt/netdb/data/devicelist.csv file
+
+This file contains all of your switches and routers, and scraper options on
+each device.  It is in csv format, so you can easily build your own parser from
+another list of devices you already have.  We use big brother here and store all
+the netdb options in that file, which is parsed in to this file.  
+
+Important Note: Ideally all devices in the devicelist.csv file should be
+hostnames that resolve in DNS.  If your devices are not registered in DNS, the
+second best option is to build a /etc/hosts file for your devices so the names
+resolve to IP addresses.  The final option is to use IP addresses in the
+devicelist.csv file and enable the gethost option in the /etc/netdb.conf file.
+This is the least preferred option because it impacts performance to a large
+degree, but is an option if you can not use a hosts file or register your
+devices in DNS.
+
+Hostnames are also used for prompt matching for SSH.  If the local hostname on
+your device does not match the hostname from DNS (not including the domain),
+scraper performance will be affected.
+
+Device file format (each device on a line):
+hostname[,arp,vrf-VRFNAME,nomac,forcessh,ipv6]
+
+Note: 
+ - SSH is enabled and telnet is disabled by default in the netdb.conf config
+   file.  You can override those settings on a per device basis with forcetelnet
+   and forcessh.
+ - By default, NetDB will try to pull the mac table from all devices in the file
+ - If ,arp is appended, then NetDB will pull the arp table on a router
+ - If ,vrf-VRFNAME is appended with arp, NetDB will pull the arp table
+   from the vrf named VRFNAME
+ - If ipv6 is appended, NetDB will pull the IPv6 Neighbor Table
+ - If ,nomac is appended, NetDB will not try to pull the mac or int status
+   data from the device (usefule for non-switching routers)
+ - If you do not want to use FQDNs here, make sure the domain name for your devices
+   is in your DNS search domain or use the local /etc/hosts file.
+ - If your device is not a cisco device, you need to append devtype=XXX or change the
+   default devtype setting in netdb.conf (see README for more info)
+
+Sample devicelist.csv:
+L2switch.yourdomain.com
+L3Switch.yourdomain.com,arp,forcessh
+L3SwitchWithVrfs.yourdomain.com,arp,vrf-perim,vrf-guest
+traditional-router.yourdomain.com,arp,ipv6,nomac,forcetelnet
+
+junosEX4200.yourdomain.com,arp,devtype=junos
+ciscowlc1.yourdomain.com,devtype=ciscowlc
+aruba1.yourdomain.com,devtype=aruba
+asafirewall.domain.com,devtype=asa,nomac
+procurve.domain.com,devtype=procurvehp,arp
+
+
+
+===== ARP Table Requirements
+
+In order to map mac addresses to IP addresses, you need to set netdbarp on the
+devices that hold the ARP tables for your network.  Switches do not know about
+IP addresses.  Only devices configured as routers on your network need to be
+configured with netdbarp, which is likely not every switch on your network.  If
+you are only getting IP addresses for your management network (Vlan1), you need
+to make sure your router is included in the devicelist and configured for
+netdbarp.
+
+If your router is a non-cisco device on a small network, or you only have one
+subnet, you can capture data from the NetDB server's ARP table.  Schedule this
+in cron separate from the normal update.  You probably want to ping scan your network
+before you run this command:
+
+#!/bin/sh
+# Non-cisco router hack to get your local server's ARP table in to the database
+nmap -sP 192.168.1.0/24
+arp -a | perl -nle 'split(/\s+/); $_[1] =~ s/\(|\)//g; print "$_[1],$_[3],0,$_[6]";' > /opt/netdb/data/arptable.txt
+netdbctl -a
+
+
+===== Test out the install:
+
+- There is a troubleshooting section below if any of these steps fail.
+
+- If you run in to any problems, check the control.log and netdb.error log. Try
+  running netdbctl with a debug level (netdbctl -debug 3)
+
+- Check the database connection and the install buy running "netdb -i 1.1.1.1"
+  (nothing should return, just check for errors) If you have any errors, the
+  output should usually give you a good clue as to what to fix.
+
+- Note those using Net::Telnet::Cisco (optional, not required)
+
+ If you get the annoying message "Use of /g modifier is meaningless in split at 
+ /usr/local/share/perl/5.10.0/Net/Telnet/Cisco.pm line 756." open the Cisco.pm library
+ and change that line from:
+
+       return wantarray ? split /$/mg, $_ : $_; # ORS instead?
+
+       to this:
+       return wantarray ? split /$/m, $_ : $_; # ORS instead?
+
+  This is a known bug in the Cisco.pm module and it no longer seems to be maintained.  
+  Consider using SSH across the board.
+
+- Try to scrape devices for data for the first time, add a -debug value if there
+  are problems
+  > netdbctl -ud -v
+
+- Check for any errors, see if the files arptable.txt and mactable.txt look correct
+  in /opt/netdb/data directory
+
+- Import data in to database (run this twice the first time)
+ > netdbctl -a -m -debug 3
+
+- Optionally import your static addresses
+ > netdbctl -s
+
+- Check control.log for any errors
+
+- Check the size of the data in the database
+   netdb -st
+
+Example Output:
+
+  NetDB Statistics
+ ---------------------------------
+   MAC Entries:      55240
+   ARP Entries:      169166
+   Switch Entries:   47508
+   Status Entries:   40403
+   DB Transactions:  3901
+   Total Rows in DB: 316218
+
+- Run netdb on one of your up addresses to see if it made it in the database
+   netdb -i 10.1.1.1
+
+===== Reset the debug level to 0 =====
+- Set the debug option in /etc/netdb.conf to 0 (at the end of the file)
+
+===== Setup crontab to automatically update the database
+
+- Append your /etc/crontab with the jobs from extra/crontab.  Reload your cron
+  server.
+
+- If you are using SSH, you probably want to uncomment the cronjob to remove the
+  known_hosts file for the netdb user.  As devices are replaced or upgraded,
+  their ssh keys change, causing login failures (seen in the control logs).
+
+- Monitor your control.log for any errors, you can grep -i error
+  /var/log/netdb/control.log
+
+- Any serious errors at the library or database level will be in
+  /var/log/netdb.error
+
+===== Database backup =====
+
+- Consider how you will backup the MySQL database.  You can use the netdbctl -bu
+  command to perform database backups.  Simply copying the files from the
+  /var/mysql/ directories is not enough (for any MySQL database).  Check google
+  for MySQL backup best practices.
+
+===== Web Interface Install =====
+
+- Install netdb.cgi.pl for the web interface (highly recommended, see the
+  screenshots on sourceforge). The install instructions are at the top of the
+  netdb.cgi.pl file in the /opt/netdb/ directory.
+
+
+===== IPv6 Setup =====
+
+- Append ,ipv6 to any device in the device file you want to capture the neighbor
+  table on
+
+- If you have an older install of NetDB, make sure "ipv6_file = ipv6nt.csv" is
+  in your netdb.conf file.
+
+- Add the -v6 option to your netdbctl cron job to import the v6 neighbor table
+
+
+===== MRTG/Cacti Graphs =====
+- Check out the extra/mrtg.conf and extra/update-statistics.sh file for ideas for
+  generating graphs on your data in the database. You can graph daily number of ARP
+  and MAC entries, switchports in use, and network growth over time.
+
+===== Bradford or Generalized NAC Integration ===== 
+
+- There's an option to integrate with Bradford NAC or to import generalized NAC
+  registration data in to NetDB.  Bradford integration now relies on the client
+  dump file off the NAC server.  You'll need to setup a cronjob to send it over
+  to your NetDB server to be imported on a regular basis.  The database method
+  proved to be too much trouble and not accurate enough to support.
+
+- See the bradford/bclientdump.pl script and the sample netdb.conf file for options
+  configuring this.
+
+- To invoke the script, run netdbctl.pl -un2 to update the nac.csv file from the
+  Bradford client dump file, then netdbctl.pl -n to import that data.
+
+- If you are not using Bradford, and have prepared your own nac.csv file, you
+  can just do a netdbctl.pl -n to import that data.  See the bclientdump.pl
+  script for the file format.
+
+===== Changing VLANs from the Web Interface =====
+
+- If you want to allow users to change vlans from the web interface, first
+  install the netdb.cgi.pl CGI script.
+
+- Once installed, uncomment vlan_script in /etc/netdb-cgi.conf and edit the
+  vlan_change access level to allow access to specified users, or to allow a
+  user access to specific switches.
+
+- Make sure www-data can write to the /var/log/netdb/vlanchange.log file.
+  Records are also kept in the NetDB transaction log (netdb -t).
+
+- If you run in to any issues, check your apache error logs for clues.  You can
+  also run the vlan_change script from the CLI.
+
+===== Database Maintenance / Deleting Data =====
+
+- Once the number of ARP entries grows to over 1 million rows, wildcard text
+  searches for hostnames can start to take more time to execute.  Scale this
+  back to improve performance.
+
+- To delete old data, see the delete options in netdbctl
+
+- To backup and restore the database (DO THIS before running these methods), see the netdbctl backup and restore
+  methods.
+
+Example Delete Routine:
+
+Backup database to a netdb writable location:
+> netdbctl -bu /home/netdb/backup.sql
+
+Get deletion statistics for so many days:
+> netdbctl -dt -d 300
+
+  NetDB Delete Statistics over 365 days
+ ---------------------------------
+   MAC Entries:      29548
+   ARP Entries:      236998
+   Switch Entries:   40446
+   Registrations:    129
+   Total Deletable Rows: 306992
+
+ Note: Deleting MAC entries will delete all previously associated ARP, switch and registration
+ entries. If you combine these statistics with an SQL IP filter and delete the matched mac entries,
+ the related switch and NAC registration data will also be deleted.  The MAC address is the primary
+ key for those tables.
+
+Restrict deleted data by IP via SQL query:
+> netdbctl -dt -d 300 -ip 10.24.%
+  NetDB Delete Statistics over 300 days
+ ---------------------------------
+   MAC Entries:      46
+   ARP Entries:      134
+
+Delete MAC entries and associated ARP, switchport and registration data, 
+option -dm cascades due to foreign key contraints unlike -da or -ds:
+> netdbctl -dm -d 300 -ip 10.24.%
+
+Are you sure you want to delete these 46 records from the database?  Did you do a backup using netdbctl first?
+Confirm Deletion of Data. [yes/no]: yes
+Deleting Data from Database...done.
+
+===============
+Troubleshooting
+===============
+
+- If it's running extremely slow when you do an ARP import in to the database, you likely have a reverse DNS issue on
+  your network.  Make sure your DNS servers are properly configured or try a local caching BIND server.  You can also
+  disable DNS lookups with disable_DNS, see the netdb.conf file for ideas on how to use this.
+
+- If you are having issues with data showing up in the database, first start by turning debugging on in /etc/netdb.conf
+  to level 3
+
+- Check to see if the MAC or ARP data is getting in to the data files arptable.txt and mactable.txt files by grepping
+  for some device data in /opt/netdb/data/.
+
+- If you are not getting ARP data, make sure you append the devicelist.csv file entry with: device.domain.com,netdbarp
+
+- If data is not getting populated, you have a scraper problem.  Run netdbctl with the -v or -vv option to debug any 
+  scraper issues.
+
+- If the data is in the files, check the database: mysql -u netdb -p -h localhost
+
+use netdb;
+select * from switchports;
+select * from ipmac; # where ip='1.1.1.1';
+
+show tables;
+describe ipmac;
+
+
+Further Support: Please use the forums on sourceforge for support.

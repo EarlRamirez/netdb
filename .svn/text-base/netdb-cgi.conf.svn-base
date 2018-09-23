@@ -1,0 +1,127 @@
+## NetDB's CGI Configuration File
+# Normally installed at /etc/netdb-cgi.conf
+
+#######################
+# NetDB CGI Variables #
+#######################
+
+# CGI filename installed under /cgi-bin/
+scriptName       = netdb.pl
+
+# Site Specific Info
+ownerInfo        = Network Team
+ownerEmail       = admin@example.com
+pageTitle        = NetDB - Network Tracking Database
+pageName         = NetDB - Network Tracking Database
+
+# HTML Template file, can be customized for your site
+template         = /opt/netdb/extra/depends/netdb-template.html
+
+# Location of CGI Files where script is installed (no trailing slash)
+cgibin           = /cgi-bin
+
+# Root directory of the web site on the file system
+root             = /var/www/
+
+# About/Help file, customize with your own information
+aboutFile        = /opt/netdb/extra/about.html
+
+# Main NetDB Config File
+config_file      = /etc/netdb.conf
+
+# Vlan Change Script (disabled via access levels by default)
+# Uncomment this and setup the access levels below to enable
+# the changing of Vlans
+#
+#vlan_script      = /opt/netdb/vlanchange.pl -vl 
+
+# Shut/No Shut functionality. Cisco only for now or you can implement this on
+# your own platform by calling a custom switch.
+#
+# shutnoshut_script = /opt/netdb/vlanchange.pl -sns
+
+# Description Change Script
+#
+# Requires desc_change report below to be enabled
+#
+#desc_script      = /opt/netdb/vlanchange.pl -ds
+
+
+
+# Advanced options for integration with other scripts
+useCamtrace      = 0  # Integrate a layer2 trace script
+useStatistics    = 0  # Requires update-statistics.sh to be run in cron
+useNAC           = 0  # Requires registration data from NAC Appliance for user reports
+useInventory     = 0  # Custom Option
+
+# CGI MAC Address Display Format (will override the netdb.conf library settings)
+# You can override this again per query by calling script with a GET option:
+# /cgi-bin/netdb.pl?macformat=ieee_dash
+# 
+mac_format = ieee_colon
+
+# Switchport description length (still shows full description under tooltip and CSV)
+desc_length = 30
+
+# If you are using FQDNs in your database (see netdb.conf), you need to enable this
+# option here as well. See netdb.conf
+#
+# use_fqdn = 1
+
+
+##################
+# Access Control #
+####################################################################################
+# By default, users are authorized to access all reports (Level 2 and below)
+#
+# To restrict users, make the default auth level 0 or 1.  Then put restricted report 
+# types under level1_reports or level2_reports.  Add the usernames that are
+# allowed to access those reports in the level1_access or level2_access options 
+# below and seperate the usernames by spaces.
+#
+# You can also restrict the maximum number of results allowed, based on the user
+# level, by changing the level#_maxcount options below.
+
+## Default Auth Level for users accessing the database
+default_auth_level = 2
+
+## User Access Lists
+# Note: Usernames are seperated by spaces, terminate a line with \ to start a new 
+# line
+# level1_access  = user1 user2 \
+#                  user3 user4
+# level2_access  = admin1 admin2
+
+## Access Control for different report types
+# Note: If a report is not defined here, access to that report is unrestricted
+level0_reports = Hostname IP MAC
+level1_reports = newmacs vendor
+level2_reports = vlanstatus vlanreport switchreport unusedports wifidata desc_search
+#level3_reports = vlan_change desc_change
+
+## Maximum Result Count returned to a user for any before an error is given (applies 
+# to all report types)
+level0_maxcount = 5
+level1_maxcount = 1000
+level2_maxcount = 200000
+
+# Vlan Change Access
+#
+# You can grant the ability to change vlans to users on a network wide basis by
+# using vlan_change via the access levels above.  Alternatively you can grant
+# vlan change access to users on a per switch basis.  Once enabled, a pencil
+# icon will appear next to the vlan in the switch report which will call the
+# vlan change script.
+#
+# Wildcards: supports *sw1 building* and building*sw1
+
+
+vlan_change user1 = switch1 switch5 switch10
+vlan_change user2 = switch2 building*
+
+
+###########################################################################
+# Debug Level:
+###########################################################################
+debug = 0
+

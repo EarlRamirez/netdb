@@ -1,0 +1,25 @@
+
+Sendjob can send commands to a list of switches via SSH and or Telnet using the
+NetDB connection methods. It requires a list of devices formatted like NetDB's
+devicelist.csv file.  The script can send a list of commands that will be sent
+exactly as if you were to type them, so you need to conf t etc in your list of
+commands.  It can specifically send out a write mem job or specify a directory
+to save configs in.
+
+The script is multi-process based and the parent process will save any output
+from the child processes either to a single file or to individual log files per
+device.  Regular output will only show errors and a process indicator.  Verbose
+output will show you every command being sent and any errors.  Use the -nw to
+silence the whirly if running from a cron job.
+
+Examples:
+
+Send commands in cmd.txt to list of devices in dev.csv and log to a single file:
+./sendjob.pl -cf cmd.txt -df dev.csv -lf job.log
+
+Same as above, but wri mem and save results from each device to its own logfile:
+./sendjob.pl -cf cmd.txt -df dev.csv -wm -ld ./devlogs/
+
+Save configs to directory and wri mem on all devices, no output but errors
+./sendjob.pl -df dev.csv -lf saveconfigs.log -wm -cd ./configs/ -nw
+

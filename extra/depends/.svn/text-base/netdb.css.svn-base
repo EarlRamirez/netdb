@@ -1,0 +1,372 @@
+@charset "utf-8";
+/* Basic properties for links and heading styles to make NetDB look good */
+
+body{
+        font-family: Tahoma,Arial,sans-serif;
+        color: #333333;
+        line-height: 1.166;
+        padding: 7px;
+}
+
+/******* hyperlink and anchor tag styles *******/
+
+a:link, a:visited{
+        /* color: #990033; */
+        color:#004276;
+        text-decoration: none;
+}
+
+a:hover{
+        text-decoration: underline;
+}
+
+
+h1{
+ font: bold 120% Arial,sans-serif;
+ color: #334d55;
+ margin: 0px;
+ padding: 0px;
+}
+
+h2{
+ font: bold 114% Arial,sans-serif;
+ color: #004276;
+ margin: 0px;
+ padding: 0px;
+}
+
+h3{
+ font: bold 100% Arial,sans-serif;
+ color: #334d55;
+ margin: 0px;
+ padding: 0px;
+}
+
+h4{
+ font: 100% Arial,sans-serif;
+ color: #333333;
+ margin: 0px;
+ padding: 0px;
+}
+
+h5{
+ font: 100% Arial,sans-serif;
+ color: #334d55;
+ margin: 0px;
+ padding: 0px;
+}
+
+/**************************/
+/** NetDB Table and Divs **/
+/**************************/
+
+.smallfont {
+	font-family:"Trebuchet MS",Trebuchet,Verdana,Helvetica,Arial,sans-serif;
+	font-size:13px;
+	padding-left:15px;
+}
+.netdb {
+  padding: 2px 0px 0px 0px;
+  font: 92% Arial,sans-serif;
+}
+.netdb table {
+border:1px solid #c6cfe1;
+border-collapse:collapse;
+font-family:Arial,"Lucida Sans Unicode","Lucida Grande",Sans-Serif;
+font-size:12px;
+margin:10px;
+margin-top:5px;
+text-align:left;
+width:97%;
+margin-bottom:20px;
+}
+.netdb th {
+border:1px solid #c6cfe1;
+color:#000000;
+background-color:#dfe4ee;
+font-size:12px;
+font-weight:bolder;
+padding:5px;
+padding-bottom:5px;
+padding-top:5px;
+}
+.netdb th:hover{
+	text-decoration:underline;
+}
+.netdb th:active{
+background-color:#DDDDDD;
+}
+.netdb td {
+color:#222222;
+padding:4px;
+border:1px solid #c6cfe1;
+}
+.netdb tbody tr:hover td {
+background:#EFF1F6 none repeat scroll 0 0;
+color:#000000;
+}
+
+.netdb thead tr .header {
+/*        background-image: url(/depends/bg.gif); */
+        background-repeat: no-repeat;
+        background-position: right center;
+		padding-right:18px;
+        cursor: pointer;
+}
+.netdb thead tr .headerSortUp {
+        background-image: url(/depends/asc.gif);
+		background-color: #A5B3CF;
+}
+.netdb thead tr .headerSortDown {
+        background-image: url(/depends/desc.gif);
+		background-color: #A5B3CF;
+}
+.netdb thead tr .headerSortDown, .netdbtable thead tr .headerSortUp {
+background-color: #A5B3CF;
+}
+
+/* Message Box Informational Notices */
+.messagebox {
+  padding: 10px;
+  border: 2px solid #ddd;
+  background-color: #eee;
+  color: #222;
+  width: 420px;
+  margin-left: 10px;
+  display:none;
+}
+.warning {
+  background: #FBE3E4;
+  color: #333333;
+  border-color: #FBC2C4;
+}
+.warning b {
+  color: #D12F19;
+}
+.info {
+  background:#FFFFCC none repeat scroll 0 0;
+  border:1px solid #DEDEDE;
+  color:#333333;
+}
+.success {
+  background: #E6EFC2;
+  color:#333333;
+  border-color: #C6D880;
+}
+
+/* notice can be combined with messagebox to start hidden, or can be used just as a notice */
+.notice {
+    width: 420px;
+    padding: 0.5em;
+    background-color: #f0f0f0;
+    color: #000000;
+	text-align: left;
+    border:solid 1px #c6cfe1;
+	background:#dfe4ee;
+	padding:10px;
+	color:#333333;
+	margin-bottom:20px;
+	margin-left: 10px;
+}
+.notice h1 {
+	font-size:16px;
+	color:#000000;
+}
+
+.notice label{
+	display:block;
+	margin-bottom:2px;
+	color:#555555;
+}
+
+.notice label span{
+	display:block;
+	float:left;
+	padding-right:6px;
+	width:100px;
+	text-align:right;
+	font-weight:bold;
+}
+
+
+.netdbresults {
+	display:none;
+	margin-top:5px;
+	}
+.intstats {
+    border:solid 1px #c6cfe1;
+	background:#dfe4ee;
+	padding:10px;
+	color:#333333;
+	margin-bottom:20px;
+	margin-left: 10px;
+	display:none;
+}
+
+.intstatsbutton {
+	margin-left:22px;
+}
+
+.printbox-outside {
+	border: 2px solid black;
+	width: 250px;
+	margin: 12px;
+	margin-left:20px;
+	text-align:center;
+	background:#dfe4ee;
+	line-height:1.4em;
+}
+.printbox-outside-right {
+    position:absolute;
+	border: 2px solid black;
+	width: 250px;
+	margin-left:470px;
+	text-align:center;
+	background:#dfe4ee;
+	line-height:1.4em;
+}
+
+.printbox-inside {
+
+	border-top: 1px solid black;
+	padding: 0.2em;
+	background-color: #f0f0f0;
+	border-bottom:0px;
+	border-right:0px;
+	border-left:0px;
+	}
+	
+/* Form for netdb and camtrace */
+div.box{
+	border:solid 1px #c6cfe1;
+	background:#dfe4ee;
+	padding:10px;
+	color:#333333;
+	margin-bottom:20px;
+	margin-left: 10px;
+	width:420px;
+}
+
+div.box h1 {
+	font-size:16px;
+	color:#000000;
+}
+div.box p{padding-bottom:4px;}
+
+div.box input .input-text{
+	display:block;
+	border:1px solid #3b6e22;
+	color:#666666;
+	width:180px;
+	margin-bottom:6px;
+}
+
+div.box .netdblabel{
+	display:block;
+	margin-bottom:5px;
+	color:#555555;
+}
+div.box label{
+	display:block;
+	margin-bottom:5px;
+	color:#555555;
+}
+
+div.box label span{
+	display:block;
+	float:left;
+	padding-right:6px;
+	width:100px;
+	text-align:right;
+	font-weight:bold;
+}
+div.netdbcheckboxes label{
+	display:inline-block;
+	margin-bottom:3px;
+	color:#555555;
+	margin-right:8px;
+	font-size:12px;
+}
+
+/* Button Code http://stopdesign.com/eg/buttons/3.0/code.html */
+.btn {
+-x-system-font:none;
+background:transparent none repeat scroll 0 0;
+border-width:0;
+color:#333333;
+display:inline-block;
+font-family:Arial,Sans-serif;
+font-size:100%;
+font-size-adjust:none;
+font-stretch:normal;
+font-style:normal;
+font-variant:normal;
+font-weight:normal;
+line-height:1.2;
+margin:0;
+overflow:visible;
+padding:3px 0;
+text-decoration:none;
+}
+* html button.btn {
+padding-bottom:1px;
+}
+html:not([lang*=""]) button.btn {
+margin:0 -3px;
+}
+.btn span {
+background:#DDDDDD url(/depends/bg-button.gif) repeat-x scroll 0 0;
+border-left:1px solid #BBBBBB;
+border-right:1px solid #AAAAAA;
+margin:0;
+padding:3px 0;
+}
+* html .btn span {
+padding-top:0;
+}
+.btn span span {
+border-bottom:1px solid #AAAAAA;
+border-top:1px solid #BBBBBB;
+border-width:1px 0;
+padding:3px 0.4em;
+position:relative;
+}
+
+.btn:hover span, .btn:hover span span, .btn:focus span, .btn:focus span span {
+border-color:#99CCFF !important;
+color:#000000;
+cursor:pointer;
+}
+.btn:active span {
+background-position:0 -400px;
+outline-color:-moz-use-text-color;
+outline-style:none;
+outline-width:medium;
+}
+.btn:focus, .btn:active {
+outline-color:-moz-use-text-color;
+outline-style:none;
+outline-width:medium;
+}
+.primary {
+color:#000000;
+font-weight:bold;
+}
+
+/* Tooltip */
+#tooltip{
+	position:absolute;
+	border:1px solid #333;
+	background:#f7f5d1;
+	padding:2px 5px;
+	color:#333;
+	display:none;
+}
+
+.spacer{
+	margin-top:10px;
+	margin-left:30px; 
+	margin-bottom:5px;
+	font-size:11px;
+	color:#555555;
+}

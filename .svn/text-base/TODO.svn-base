@@ -1,0 +1,37 @@
+- !! IPv6 Partial Search: https://sourceforge.net/p/netdbtracking/discussion/939988/thread/cf9eeec6/?limit=25#b062
+- Success failed issue: http://sourceforge.net/p/netdbtracking/discussion/939989/thread/6beaf045/?limit=25
+- CLI reserved flag broken
+- Minor feature request, could you make it so that one could click the "NetDB - Network Tracking Database" title and it would take them back to the main page.
+- Fix IPv6 router display in CGI
+- macwatch holddown timer
+- WLC ARP Table - Forum http://sourceforge.net/p/netdbtracking/discussion/939989/thread/c4a9ed7e/
+- Check telnet ND support for NX-OS
+- ** Fix unused port report on CLI to use lastup
+- Improve inventory gathering
+- Change search name of devices on VLAN ID to ARP entries on a VLAN ID
+- Shut/no shut functionality from CGI
+- Wireless SSID-Vlan click is broken
+- Description change to null or ? marks
+- Sorting of vlans after 3 clicks and sorting of mac addresses
+- SEARCH PORT DESCRIPTIONS
+- out of order glitch with skip_port and devtype:
+  us-sac-ps01-b1c4ra02_mgmt0.mgmt,forcetelnet,skip_port=Po1,devtype=nxos
+  us-sac-ps02-b1c4ra05_mgmt0.mgmt,forcetelnet,skip_port=Po1,devtype=nxos
+  Thu Feb 20 14:54:00 2014: netdbctl(17982): Couldn't execute /opt/netdb/netdbscraper/Po1scraper.pl -debug 1 -d us-sac-ps01-b1c4ra02_mgmt0.mgmt,forcetelnet,skip_port=Po1,devtype=nxos,devtype=Po1 -conf /etc/netdb.conf -pn: No such file or directory at /opt/netdb/netdbscraper/netdbscraper.pl line 324.
+
+
+- Daemon Scraper Plan
+ - Master daemon process would spawn individual scrapers and monitor them
+ - Use sockets for interprocess communication
+ - Scrapers maintain stand-alone functionality in addition to daemon functionality
+ - When running in daemon mode, scrapers write to daemon directory with individual files for each scraper
+ - Master daemon would kick off update event to scraper
+ - At end of update, master daemon would receive completion message, then import the files
+ - Event timers to check on scrapers, if not heard back from then kill individual scrapers and report
+ - concurrency?
+ - Would update db process queue updates one at a time or run in parallel?
+ - Daemonize updatenetdb.pl?
+ - Detect and deal with disconnects, restart scrapers daily to remain sane?
+
+
+

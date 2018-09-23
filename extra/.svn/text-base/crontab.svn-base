@@ -1,0 +1,25 @@
+####################################################################################################
+# NetDB Crontab Routines
+####################################################################################################
+#
+# Update NetDB MAC and ARP table data
+00,15,30,45 * * * * netdb /opt/netdb/netdbctl.pl -ud -a -m -nd > /dev/null
+#
+# Update static address flag from DHCP, relies on file to be up to date
+35 *    * * *       netdb /opt/netdb/netdbctl.pl -s  > /dev/null
+#
+# Force DNS updates on all current ARP entries once a day
+5 13   * * *        netdb /opt/netdb/netdbctl.pl -f > /dev/null
+#
+# Cleanup netdb's SSH known_host file automatically (uncomment)
+#00 5    * * *   root    rm /home/netdb/.ssh/known_hosts 2> /dev/null
+#
+# Update statistics for graphs if enabled, run before MRTG
+#04,09,14,19,24,29,34,39,44,49,54,59 * * * *   netdb    /opt/netdb/extra/update-statistics.sh > /dev/null
+#
+# Update MAC Vendor Database from IEEE monthly
+00 5   15 * *   root   wget http://standards.ieee.org/regauth/oui/oui.txt -O /opt/netdb/data/oui.txt
+#
+#############
+# END NetDB #
+#############
