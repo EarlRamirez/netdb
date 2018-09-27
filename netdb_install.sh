@@ -5,12 +5,17 @@
 # Install dependencies and packages
 yum -y install epel-release
 
-yum install -y gcc unzip make bzip2 curl lynx ftp patch mariadb mariadb-server httpd httpd-tools perl
+yum install -y gcc unzip make bzip2 curl lynx ftp patch mariadb mariadb-server httpd httpd-tools perl \
 perl-List-MoreUtils perl-DBI perl-Net-DNS perl-Math-Round perl-Module-Implementation \
 perl-Params-Validate perl-DateTime-Locale perl-DateTime-TimeZone perl-DateTime \
 perl-DateTime-Format-MySQL perl-Time-HiRes perl-Digest-HMAC perl-Digest-SHA1 \
 perl-Net-IP perl-AppConfig perl-Proc-Queue perl-Proc-ProcessTable perl-NetAddr-IP perl-IO-Socket-IP \
 perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN
+
+# Install remaining perl modules
+for mod in Attribute::Handlers Data::UUID Net::MAC::Vendor Net::SSH::Expect File::Flock ExtUtils::Constant
+do cpan $mod
+done;
 
 # Create netdb user
 useradd netdb
@@ -53,11 +58,6 @@ exit
 mkdir /usr/lib64/perl5/Net/
 ln -s /opt/netdb/NetDBHelper.pm /usr/lib64/perl5/NetDBHelper.pm
 ln -s /opt/netdb/NetDB.pm /usr/lib64/perl5/NetDB.pm
- 
-# Install remaining perl modules
-for mod in Attribute::Handlers Data::UUID Net::MAC::Vendor Net::SSH::Expect File::Flock ExtUtils::Constant
-do cpan $mod
-done;
 
 # Create directories and copy required files
 cp /opt/netdb/netdb.conf /etc/
@@ -73,10 +73,47 @@ touch /var/www/html/netdb/netdb.passwd
 htpasswd -c /var/www/html/netdb/netdb.passwd netdb
 
 #TODO Create virtual host
+set_vhost() {
+	netdb_vhost=/etc/httpd/conf.d/netdb.conf
+	{
+		echo "<VirtualHost _default_:80>"
+		echo	 "DocumentRoot /var/www/html/netdb/"
+		echo	 "ServerName $fqdn"
+		echo		"<Directory />"
+		echo			"Options FollowSymlinks"
+		echo			"AllowOverride None"
+		echo 		"</Directory>"
+		echo 		"<Directory /var/www/html/netdb>"
+		echo			"Options Indexes FollowSymlinks MultiViews"
+		echo			"AllowOverride None"
+		echo			"Redirect /index.html /cgi-bin/netdb.pl"
+		echo			"AuthType basic"
+		echo			"AuthName "NetDB Login""
+		echo			"AuthUserFile /var/www/html/netdb/netdb.passwd"
+		echo			"Require valid-user"
+		echo 		"</Directory>"
+		echo 	"ScriptAlias /cgi-bin/ /var/www/cgi-bin/"
+		echo 		"<Directory "/var/www/cgi-bin">"
+		echo 			"Options +ExecCGI -MultiViews +FollowSymlinks"
+		echo 			"Allow from all"
+		echo 			"AuthType basic"
+		echo			"AuthName "NetDB Login""
+		echo	 		"AuthUserFile /var/www/html/netdb/netdb.passwd"
+		echo	 		"Require valid-user"
+		echo 		"</Directory>"
+		echo 	"ErrorLog /var/log/httpd/netdb_error.log"
+		echo 	"Customlog /var/log/httpd/access.log combined"
+		echo "</VirtualHost>"
+	} >> "$netdb_vhost"
+}
+
+set_vhost()
 
 #TODO Create SSL certificate
 
 #TODO Configure MGRT 
+
+#TODO Add crontab entries, don't forget you need to run it as root to get past the lockfile (temp fix)
 
 # Create control log
 touch /var/www/html/netdb/control.log
@@ -88,4 +125,10 @@ systemctl enable httpd && systemctl start httpd
 
 # Create firewall rule
 firewall-cmd --permanent --add-service=http && firewall-cmd --reload
+
+# Add hostname to /etc/hosts
+hostname="$(hostname)"
+fqdn="$(hostname --fqdn)"
+ipaddr="$(ip -o -4 addr show dev eth0 | sed 's/.* inet \([^/]*\).*/\1/')"
+echo  $ipaddr	$hostname >> /etc/hosts
 
