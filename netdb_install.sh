@@ -23,6 +23,7 @@ usermod -aG wheel netdb
 
 # Create directory and update permission
 # Download netdb-1.13.2.tar.gz from Sourceforge https://sourceforge.net/projects/netdbtracking/files/latest/download
+#TODO have this process replaced by git clone <url> /opt/
 tar -xzvf netdb-1.13.2.tar.gz -C /opt/
 chown -R netdb.netdb /opt/netdb
 mkdir -pv /var/log/netdb
@@ -115,9 +116,8 @@ set_vhost()
 
 #TODO Add crontab entries, don't forget you need to run it as root to get past the lockfile (temp fix)
 
-# Create control log
-touch /var/www/html/netdb/control.log
-echo "Nothing here yet!!" > /var/www/html/netdb/control.log
+# Make Control log available from the Web UI
+ln -s /var/log/netdb/control.log /var/www/html/netdb/control.log
 
 # Update document root permission and fire up the web server
 chown -R apache:apache /var/www/html/netdb
