@@ -1,12 +1,15 @@
-==========
 
-##NetDB [Network Tracking Database](http://netdbtracking.sourceforge.net/)###
+## NetDB 
+
+[NetDB](http://netdbtracking.sourceforge.net/)
 
 -----------
-###Credit###
+### Credit
+
+All credit goes to Jonathan Yantis.
 
 ------------
-###Installation###
+### Installation
 
 -----------
-###Troubleshotting###
+### Troubleshotting
