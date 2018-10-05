@@ -10,7 +10,7 @@ perl-List-MoreUtils perl-DBI perl-Net-DNS perl-Math-Round perl-Module-Implementa
 perl-Params-Validate perl-DateTime-Locale perl-DateTime-TimeZone perl-DateTime \
 perl-DateTime-Format-MySQL perl-Time-HiRes perl-Digest-HMAC perl-Digest-SHA1 \
 perl-Net-IP perl-AppConfig perl-Proc-Queue perl-Proc-ProcessTable perl-NetAddr-IP perl-IO-Socket-IP \
-perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN
+perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN expect
 
 # Install remaining perl modules
 for mod in Attribute::Handlers Data::UUID Net::MAC::Vendor Net::SSH::Expect File::Flock ExtUtils::Constant
@@ -41,19 +41,37 @@ cp /opt/netdb/extra/netdb-logrotate /etc/logrotate.d/
 # Configure Mariadb #
 #####################
 systemctl enable mariadb && systemctl start mariadb
-mysql_secure_installation
+	# Automated configuration for securing MySQL/MariaDB		
+		echo "* Securing MariaDB."
+		SECURE_MYSQL=$(expect -c "
+		set timeout 10
+		spawn /bin/mysql_secure_installation
+		expect \"Enter current password for root (enter for none):\"
+		send \"$mysql_root\r\"
+		expect \"Change the root password?\"
+		send \"y\r\"
+		expect \"New password:\"
+		send \"$mysql_root_pass\r\"
+		expect \"Re-enter new password:\"
+		send \"$mysql_root_pass\r\"
+		expect \"Remove anonymous users?\"
+		send \"y\r\"
+		expect \"Disallow root login remotely?\"
+		send \"y\r\"
+		expect \"Remove test database and access to it?\"
+		send \"y\r\"
+		expect \"Reload privilege tables now?\"
+		send \"y\r\"
+		expect eof
+		")
+		echo "$SECURE_MYSQL"
+		echo ""
 
-mysql -u root -p
-create database netdb;
-use netdb;
-source /opt/netdb/createnetdb.sql
 
-CREATE USER 'netdbuser'@'localhost' IDENTIFIED BY 'netdb1234';
-GRANT SELECT ON *.* TO 'netdbuser'@'localhost';
+mysql -u root --password=$mysql_root_pass --execute="use netdb;source /opt/netdb/createnetdb.sql"
+mysql -u root --password=$mysql_root_pass --execute="use netdb;GRANT ALL PRIVILEGES ON netdb.* TO netdb@localhost IDENTIFIED BY '$mysqluserpw';"
+mysql -u root --password=$mysql_root_pass --execute="use netdb;GRANT SELECT,INSERT,UPDATE,LOCK TABLES,SHOW VIEW,DELETE ON netdb.* TO 'netdbadmin'@'localhost' IDENTIFIED BY '$mysqluserro';"
 
-CREATE USER 'netdbadmin'@'localhost' IDENTIFIED BY 'netdbadmin1234';
-GRANT SELECT,INSERT,UPDATE,LOCK TABLES,SHOW VIEW,DELETE ON *.* TO 'netdbadmin'@'localhost';
-exit
 
 # Add netdb perl modules
 mkdir /usr/lib64/perl5/Net/
