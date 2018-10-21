@@ -3458,7 +3458,7 @@ sub parseConfig {
     $dbpass          = $config->dbpass();     # R/W Password
     $dbuserRO        = $config->dbuserRO();   # DB Read Only User
     $dbpassRO        = $config->dbpassRO();   # DB RO Password
-    $ouidb           = "file:/" . $config->ouifile();
+    #$ouidb           = "file:/" . $config->ouifile(); # Always retured file not found and caused vendor import to fail
     $no_switchstatus = $config->no_switchstatus();
     $errlog          = $config->error_log();
     $regex           = $config->regex();

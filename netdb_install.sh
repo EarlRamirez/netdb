@@ -2,6 +2,23 @@
 
 # Install and Configure NetDB on CentOS/RHEL Linux
 
+# Variables
+
+COUNTRY_NAME=US
+STATE=Florida
+LOCALITY=Miami
+ORGANISATION=Networking
+ORGANISATION_UNIT=NetworkTracking
+COMMON_NAME=netdb
+EMAIL=netdb@localdomain.com
+HOSTNAME="$(hostname)"
+FQDN="$(hostname --fqdn)"
+IP_ADDR="$(ip -o -4 addr show dev eth0 | sed 's/.* inet \([^/]*\).*/\1/')"
+MYSQL_ROOT=""
+MYSQL_ROOT_PASS=""
+MYSQL_USER_PW=""
+MYSQL_USER_RO=""
+
 # Install dependencies and packages
 yum -y install epel-release
 
@@ -10,7 +27,7 @@ perl-List-MoreUtils perl-DBI perl-Net-DNS perl-Math-Round perl-Module-Implementa
 perl-Params-Validate perl-DateTime-Locale perl-DateTime-TimeZone perl-DateTime \
 perl-DateTime-Format-MySQL perl-Time-HiRes perl-Digest-HMAC perl-Digest-SHA1 \
 perl-Net-IP perl-AppConfig perl-Proc-Queue perl-Proc-ProcessTable perl-NetAddr-IP perl-IO-Socket-IP \
-perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN expect
+perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN expect mod_ssl
 
 # Install remaining perl modules
 for mod in Attribute::Handlers Data::UUID Net::MAC::Vendor Net::SSH::Expect File::Flock ExtUtils::Constant
@@ -68,9 +85,9 @@ systemctl enable mariadb && systemctl start mariadb
 		echo ""
 
 
-mysql -u root --password=$mysql_root_pass --execute="use netdb;source /opt/netdb/createnetdb.sql"
-mysql -u root --password=$mysql_root_pass --execute="use netdb;GRANT ALL PRIVILEGES ON netdb.* TO netdb@localhost IDENTIFIED BY '$mysqluserpw';"
-mysql -u root --password=$mysql_root_pass --execute="use netdb;GRANT SELECT,INSERT,UPDATE,LOCK TABLES,SHOW VIEW,DELETE ON netdb.* TO 'netdbadmin'@'localhost' IDENTIFIED BY '$mysqluserro';"
+mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;source /opt/netdb/createnetdb.sql"
+mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT ALL PRIVILEGES ON netdb.* TO netdb@localhost IDENTIFIED BY '$MYSQL_USER_PW';"
+mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT SELECT,INSERT,UPDATE,LOCK TABLES,SHOW VIEW,DELETE ON netdb.* TO 'netdbadmin'@'localhost' IDENTIFIED BY '$MYSQL_USER_RO';"
 
 
 # Add netdb perl modules
@@ -91,13 +108,51 @@ cp /opt/netdb/netdb.cgi.pl /var/www/cgi-bin/netdb.pl
 touch /var/www/html/netdb/netdb.passwd
 htpasswd -c /var/www/html/netdb/netdb.passwd netdb
 
+# Create SSL Self-signed certificate
+GEN_CERT="openssl req -x509 -nodes -days 1095 -newkey rsa:2048 -keyout /etc/pki/tls/private/netdb-selfsigned.key -out /etc/pki/tls/certs/netdb-selfsigned.crt"
+
+# Automated configuration for securing MySQL/MariaDB		
+echo "* Generate Self-Signed Certificate."
+GENERATE_CERT=$(expect -c "
+	set timeout 10
+	spawn $GEN_CERT
+	expect \"Country Name (2 letter code) \[XX\]:\"
+	send \"$COUNTRY_NAME\r\"
+	expect \"State or Province Name (full name) \[\]:\"
+	send \"$STATE\r\"
+	expect \"Locality Name (eg, city) \[Default City\]:\"
+	send \"$LOCALITY\r\"
+	expect \"Organization Name (eg, company) \[Default Company Ltd\]:\"
+	send \"$ORGANISATION\r\"
+	expect \"Organizational Unit Name (eg, section) \[\]:\"
+	send \"$ORGANISATION_UNIT\r\"
+	expect \"Common Name (eg, your name or your server's hostname) \[\]:\"
+	send \"$COMMON_NAME\r\"
+	expect \"Email Address \[\]:\"
+	send \"$EMAIL\r\"
+	expect eof
+")
+echo "$GENERATE_CERT"
+echo ""
+
+# Create Diffie-Hellman group
+echo "Generate DH Parameters"
+openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
+echo ""
+
+# Append SSLOpenSSLConfCmd to the certificate
+echo "Appening DH Parameters to Certificate"
+cat /etc/ssl/certs/dhparam.pem | sudo tee -a /etc/ssl/certs/snipeit-selfsigned.crt
+echo ""
+
+
 #TODO Create virtual host
 set_vhost() {
 	netdb_vhost=/etc/httpd/conf.d/netdb.conf
 	{
-		echo "<VirtualHost _default_:80>"
+		echo "<VirtualHost _default_:443>"
 		echo	 "DocumentRoot /var/www/html/netdb/"
-		echo	 "ServerName $fqdn"
+		echo	 "ServerName $FQDN"
 		echo		"<Directory />"
 		echo			"Options FollowSymlinks"
 		echo			"AllowOverride None"
@@ -122,7 +177,13 @@ set_vhost() {
 		echo 		"</Directory>"
 		echo 	"ErrorLog /var/log/httpd/netdb_error.log"
 		echo 	"Customlog /var/log/httpd/access.log combined"
-		echo "</VirtualHost>"
+        echo 	"SSLEngine on"
+        echo 	"SSLCertificateFile /etc/pki/tls/certs/netdb-selfsigned.crt"
+        echo 	"SSLCertificateKeyFile /etc/pki/tls/private/netdb-selfsigned.key"
+        echo 	"SSLProtocol -SSLv3 TLSv1 TLSv1.1 TLSv1.2"
+        echo 	"SSLHonorCipherOrder On"
+        echo 	"SSLCipherSuite ALL:!EXP:!NULL:!ADH:!LOW:!SSLv2:!SSLv3:!MD5:!RC4"
+		echo 	"</VirtualHost>"
 	} >> "$netdb_vhost"
 }
 
@@ -142,11 +203,8 @@ chown -R apache:apache /var/www/html/netdb
 systemctl enable httpd && systemctl start httpd
 
 # Create firewall rule
-firewall-cmd --permanent --add-service=http && firewall-cmd --reload
+firewall-cmd --permanent --add-service=https && firewall-cmd --reload
 
 # Add hostname to /etc/hosts
-hostname="$(hostname)"
-fqdn="$(hostname --fqdn)"
-ipaddr="$(ip -o -4 addr show dev eth0 | sed 's/.* inet \([^/]*\).*/\1/')"
-echo  $ipaddr	$hostname >> /etc/hosts
+echo  $IP_ADDR	$hostname >> /etc/hosts
 
