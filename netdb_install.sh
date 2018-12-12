@@ -15,8 +15,14 @@ HOSTNAME="$(hostname)"
 FQDN="$(hostname --fqdn)"
 IP_ADDR="$(ip -o -4 addr show dev eth0 | sed 's/.* inet \([^/]*\).*/\1/')"
 MYSQL_ROOT=""
-MYSQL_ROOT_PASS=""
-MYSQL_USER_PW=""
+echo "Enter your new root password: "
+read -rs MYSQL_ROOT_PASS
+#MYSQL_ROOT_PASS=""
+echo "Enter netdb RW password: "
+read -rs MYSQL_USER_PW
+#MYSQL_USER_PW=""
+echo "Enter netdb RW password: "
+read -rs MYSQL_USER_RO
 MYSQL_USER_RO=""
 
 # Install dependencies and packages
@@ -68,9 +74,9 @@ systemctl enable mariadb && systemctl start mariadb
 		expect \"Change the root password?\"
 		send \"y\r\"
 		expect \"New password:\"
-		send \"$mysql_root_pass\r\"
+		send \"$MYSQL_ROOT_PASS\r\"
 		expect \"Re-enter new password:\"
-		send \"$mysql_root_pass\r\"
+		send \"$MYSQL_ROOT_PASS\r\"
 		expect \"Remove anonymous users?\"
 		send \"y\r\"
 		expect \"Disallow root login remotely?\"
@@ -89,6 +95,7 @@ mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;source /opt/netdb
 mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT ALL PRIVILEGES ON netdb.* TO netdb@localhost IDENTIFIED BY '$MYSQL_USER_PW';"
 mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT SELECT,INSERT,UPDATE,LOCK TABLES,SHOW VIEW,DELETE ON netdb.* TO 'netdbadmin'@'localhost' IDENTIFIED BY '$MYSQL_USER_RO';"
 
+#TODO Update netdb.conf with credentials
 
 # Add netdb perl modules
 mkdir /usr/lib64/perl5/Net/
