@@ -64,13 +64,14 @@ cp /opt/netdb/extra/netdb-logrotate /etc/logrotate.d/
 # Configure Mariadb #
 #####################
 systemctl enable mariadb && systemctl start mariadb
-	# Automated configuration for securing MySQL/MariaDB		
+
+# Automated configuration for securing MySQL/MariaDB		
 		echo "* Securing MariaDB."
 		SECURE_MYSQL=$(expect -c "
 		set timeout 10
 		spawn /bin/mysql_secure_installation
 		expect \"Enter current password for root (enter for none):\"
-		send \"$mysql_root\r\"
+		send \"$MYSQL_ROOT\r\"
 		expect \"Change the root password?\"
 		send \"y\r\"
 		expect \"New password:\"
@@ -90,7 +91,7 @@ systemctl enable mariadb && systemctl start mariadb
 		echo "$SECURE_MYSQL"
 		echo ""
 
-
+# Create DB tables and users 
 mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;source /opt/netdb/createnetdb.sql"
 mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT ALL PRIVILEGES ON netdb.* TO netdb@localhost IDENTIFIED BY '$MYSQL_USER_PW';"
 mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT SELECT,INSERT,UPDATE,LOCK TABLES,SHOW VIEW,DELETE ON netdb.* TO 'netdbadmin'@'localhost' IDENTIFIED BY '$MYSQL_USER_RO';"
@@ -113,6 +114,7 @@ cp /opt/netdb/netdb.cgi.pl /var/www/cgi-bin/netdb.pl
 
 # Create netdb web UI credentials
 touch /var/www/html/netdb/netdb.passwd
+
 htpasswd -c /var/www/html/netdb/netdb.passwd netdb
 
 # Create SSL Self-signed certificate
