@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Install and Configure NetDB on CentOS/RHEL Linux
+# This script aims to automate the installation of NetDB and potentially use it for docker containers.
 
 # Variables
-
 COUNTRY_NAME=US
 STATE=Florida
 LOCALITY=Miami
@@ -17,15 +17,12 @@ IP_ADDR="$(ip -o -4 addr show dev eth0 | sed 's/.* inet \([^/]*\).*/\1/')"
 MYSQL_ROOT=""
 echo -n "Enter your new root password: "
 read -rs MYSQL_ROOT_PASS
-#MYSQL_ROOT_PASS=""
 echo -n "Enter netdb RW password: "
 read -rs MYSQL_USER_PW
-#MYSQL_USER_PW=""
 echo -n "Enter netdb RW password: "
 read -rs MYSQL_USER_RO
-MYSQL_USER_RO=""
 
-# Install dependencies and packages
+# Add EPEL Repository and install packages
 yum -y install epel-release
 
 yum install -y gcc unzip make bzip2 curl lynx ftp patch mariadb mariadb-server httpd httpd-tools perl \
@@ -33,20 +30,19 @@ perl-List-MoreUtils perl-DBI perl-Net-DNS perl-Math-Round perl-Module-Implementa
 perl-Params-Validate perl-DateTime-Locale perl-DateTime-TimeZone perl-DateTime \
 perl-DateTime-Format-MySQL perl-Time-HiRes perl-Digest-HMAC perl-Digest-SHA1 \
 perl-Net-IP perl-AppConfig perl-Proc-Queue perl-Proc-ProcessTable perl-NetAddr-IP perl-IO-Socket-IP \
-perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN expect mod_ssl git
+perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN expect mod_ssl git expect
 
 # Install remaining perl modules
 for mod in Attribute::Handlers Data::UUID Net::MAC::Vendor Net::SSH::Expect File::Flock ExtUtils::Constant
-do cpan $mod
+do y|cpan $mod
 done;
 
 # Create netdb user
+#TODO Have netdb function as a regular user
 useradd netdb && usermod -aG wheel netdb
 
-# Create directory and update permission
-# Download netdb-1.13.2.tar.gz from Sourceforge https://sourceforge.net/projects/netdbtracking/files/latest/download
-#TODO have this process replaced by git clone <url> /opt/
 
+#TODO have this process replaced by git clone <url> /opt/
 git clone https://github.com/EarlRamirez/netdb.git /opt/netdb
 chown -R netdb.netdb /opt/netdb
 mkdir -pv /var/log/netdb
@@ -98,7 +94,7 @@ mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;source /opt/netdb
 mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT ALL PRIVILEGES ON netdb.* TO netdb@localhost IDENTIFIED BY '$MYSQL_USER_PW';"
 mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT SELECT,INSERT,UPDATE,LOCK TABLES,SHOW VIEW,DELETE ON netdb.* TO 'netdbadmin'@'localhost' IDENTIFIED BY '$MYSQL_USER_RO';"
 
-#TODO Update netdb.conf with credentials
+#TODO Update /etc/netdb.conf with credentials
 
 # Add netdb perl modules
 mkdir /usr/lib64/perl5/Net/
@@ -106,6 +102,7 @@ ln -s /opt/netdb/NetDBHelper.pm /usr/lib64/perl5/NetDBHelper.pm
 ln -s /opt/netdb/NetDB.pm /usr/lib64/perl5/NetDB.pm
 
 # Create directories and copy required files
+#TODO Configure MRTG graph
 cp /opt/netdb/netdb.conf /etc/
 touch /opt/netdb/data/devicelist.csv
 cp /opt/netdb/netdb-cgi.conf /etc/
@@ -115,6 +112,7 @@ cp -r /opt/netdb/extra/depends /var/www/html/netdb/
 cp /opt/netdb/netdb.cgi.pl /var/www/cgi-bin/netdb.pl
 
 # Create netdb web UI credentials
+#TODO replace with DB credentials
 touch /var/www/html/netdb/netdb.passwd
 
 htpasswd -c /var/www/html/netdb/netdb.passwd netdb
@@ -201,9 +199,6 @@ set_vhost() {
 
 set_vhost
 
-#TODO Create SSL certificate
-
-#TODO Configure MGRT 
 
 #TODO Add crontab entries, don't forget you need to run it as root to get past the lockfile (temp fix)
 
@@ -215,7 +210,7 @@ chown -R apache:apache /var/www/html/netdb
 systemctl enable httpd && systemctl start httpd
 
 # Create firewall rule
-firewall-cmd --permanent --add-service=http && firewall-cmd --reload
+firewall-cmd --permanent --add-service={http,https} && firewall-cmd --reload
 
 # Add hostname to /etc/hosts
 echo  $IP_ADDR	$hostname >> /etc/hosts
