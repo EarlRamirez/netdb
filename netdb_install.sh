@@ -14,20 +14,20 @@ COMMON_NAME=netdb
 EMAIL=netdb@localdomain.com
 HOSTNAME="$(hostname)"
 FQDN="$(hostname --fqdn)"
-IP_ADDR="$(ip -o -4 addr show dev ens10 | sed 's/.* inet \([^/]*\).*/\1/')"
+IP_ADDR="$(ip -o -4 addr show dev eth0 | sed 's/.* inet \([^/]*\).*/\1/')"
 MYSQL_ROOT=""
-echo "Enter your new root password: "
+echo "Enter your MariaDB new root password: "
 read -rs MYSQL_ROOT_PASS
-echo "Enter netdb RW password: "
+echo "Enter netdb MariaDB RW password: "
 read -rs MYSQL_USER_RW
-echo "Enter netdb RO password: "
+echo "Enter netdb MariaDB RO password: "
 read -rs MYSQL_USER_RO
 
 # Add EPEL Repository and install packages
-echo "Installing EPEL Repo"
+echo "Installing EPEL Repo..."
 yum -y install epel-release
 
-echo "Installing NetDB Packages"
+echo "Installing NetDB Packages...."
 yum install -y gcc unzip make bzip2 curl lynx ftp patch mariadb mariadb-server httpd httpd-tools perl mrtg \
 perl-List-MoreUtils perl-DBI perl-Net-DNS perl-Math-Round perl-Module-Implementation \
 perl-Params-Validate perl-DateTime-Locale perl-DateTime-TimeZone perl-DateTime \
@@ -36,19 +36,19 @@ perl-Net-IP perl-AppConfig perl-Proc-Queue perl-Proc-ProcessTable perl-NetAddr-I
 perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN expect mod_ssl git expect
 
 # Install remaining perl modules
-echo "Installing NetDB Perl dependencies"
+echo "Installing NetDB Perl dependencies..."
 for mod in Attribute::Handlers Data::UUID Net::MAC::Vendor Net::SSH::Expect File::Flock ExtUtils::Constant
 do y|cpan $mod
 done;
 
 # Create netdb user
 #TODO Have netdb function as a regular user
-echo "Creating netdb user"
+echo "Creating netdb user..."
 useradd netdb && usermod -aG wheel netdb
 
 
 #TODO have this process replaced by git clone <url> /opt/
-echo "Clonning git repository"
+echo "Clonning git repository..."
 git clone https://github.com/EarlRamirez/netdb.git /opt/netdb
 chown -R netdb.netdb /opt/netdb
 mkdir -pv /var/log/netdb
@@ -65,7 +65,7 @@ cp /opt/netdb/extra/netdb-logrotate /etc/logrotate.d/
 #####################
 # Configure Mariadb #
 #####################
-echo "Starting and configuring MariaDB"
+echo "Starting and configuring MariaDB..."
 systemctl enable mariadb && systemctl start mariadb
 
 # Automated configuration for securing MySQL/MariaDB		
@@ -95,7 +95,7 @@ systemctl enable mariadb && systemctl start mariadb
 		echo ""
 
 # Create DB tables and users 
-echo "Creating the database and tables"
+echo "Creating the database and tables...."
 mysql -u root --password=$MYSQL_ROOT_PASS --execute="create database if not exists netdb"
 mysql -u root --password=$MYSQL_ROOT_PASS netdb < /opt/netdb/createnetdb.sql
 mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT ALL PRIVILEGES ON netdb.* TO netdb@localhost IDENTIFIED BY '$MYSQL_USER_RW';"
@@ -125,7 +125,7 @@ echo "Enter your netdb web UI password"
 htpasswd -c -B /var/www/html/netdb/netdb.passwd netdb
 
 # Create SSL Self-signed certificate
-echo "Creating self-signed SSL certificate"
+echo "Creating self-signed SSL certificate...."
 GEN_CERT="openssl req -x509 -nodes -days 1095 -newkey rsa:2048 -keyout /etc/pki/tls/private/netdb-selfsigned.key -out /etc/pki/tls/certs/netdb-selfsigned.crt"
 
 # Automated configuration for securing MySQL/MariaDB		
