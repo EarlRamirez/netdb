@@ -168,40 +168,40 @@ echo ""
 set_vhost() {
 	netdb_vhost=/etc/httpd/conf.d/netdb.conf
 	{
-		echo" <VirtualHost _default_:80>"
-		echo"	 DocumentRoot /var/www/html/netdb/"
-		echo"	 ServerName $FQDN"
-		echo"		<Directory />"
-		echo"			Options FollowSymlinks"
-		echo"			AllowOverride None"
-		echo" 		</Directory>"
-		echo" 		<Directory /var/www/html/netdb>"
-		echo"			Options Indexes FollowSymlinks MultiViews"
-		echo"			AllowOverride None"
-		echo"			Redirect /index.html /cgi-bin/netdb.pl"
-		echo"			AuthType basic"
-		echo'			AuthName "NetDB Login"'
-		echo"			AuthUserFile /var/www/html/netdb/netdb.passwd"
-		echo"			Require valid-user"
-		echo" 		</Directory>"
-		echo" 	ScriptAlias /cgi-bin/ /var/www/cgi-bin/"
-		echo" 		<Directory "/var/www/cgi-bin">"
-		echo" 			Options +ExecCGI -MultiViews +FollowSymlinks"
-		echo" 			Allow from all"
-		echo" 			AuthType basic"
-		echo'			AuthName "NetDB Login"'
-		echo"	 		AuthUserFile /var/www/html/netdb/netdb.passwd"
-		echo"	 		Require valid-user"
-		echo" 		</Directory>"
-		echo" 	ErrorLog /var/log/httpd/netdb_error.log"
-		echo" 	Customlog /var/log/httpd/access.log combined"
-        echo" 	SSLEngine on"
-        echo" 	SSLCertificateFile /etc/pki/tls/certs/netdb-selfsigned.crt"
-        echo" 	SSLCertificateKeyFile /etc/pki/tls/private/netdb-selfsigned.key"
-        echo" 	SSLProtocol -SSLv3 -TLSv1 TLSv1.1 TLSv1.2"
-        echo" 	SSLHonorCipherOrder On"
-        echo" 	SSLCipherSuite ALL:!EXP:!NULL:!ADH:!LOW:!SSLv2:!SSLv3:!MD5:!RC4"
-		echo" 	</VirtualHost>"
+		echo " <VirtualHost _default_:80>"
+		echo "	 DocumentRoot /var/www/html/netdb/"
+		echo "	 ServerName $FQDN"
+		echo "		<Directory />"
+		echo "			Options FollowSymlinks"
+		echo "			AllowOverride None"
+		echo " 		</Directory>"
+		echo " 		<Directory /var/www/html/netdb>"
+		echo "			Options Indexes FollowSymlinks MultiViews"
+		echo "			AllowOverride None"
+		echo "			Redirect /index.html /cgi-bin/netdb.pl"
+		echo "			AuthType basic"
+		echo '			AuthName "NetDB Login"'
+		echo "			AuthUserFile /var/www/html/netdb/netdb.passwd"
+		echo "			Require valid-user"
+		echo " 		</Directory>"
+		echo " 	ScriptAlias /cgi-bin/ /var/www/cgi-bin/"
+		echo " 		<Directory "/var/www/cgi-bin">"
+		echo " 			Options +ExecCGI -MultiViews +FollowSymlinks"
+		echo " 			Allow from all"
+		echo " 			AuthType basic"
+		echo '			AuthName "NetDB Login"'
+		echo "	 		AuthUserFile /var/www/html/netdb/netdb.passwd"
+		echo "	 		Require valid-user"
+		echo " 		</Directory>"
+		echo " 	ErrorLog /var/log/httpd/netdb_error.log"
+		echo " 	Customlog /var/log/httpd/access.log combined"
+        echo " 	SSLEngine on"
+        echo " 	SSLCertificateFile /etc/pki/tls/certs/netdb-selfsigned.crt"
+        echo " 	SSLCertificateKeyFile /etc/pki/tls/private/netdb-selfsigned.key"
+        echo " 	SSLProtocol -SSLv3 -TLSv1 TLSv1.1 TLSv1.2"
+        echo " 	SSLHonorCipherOrder On"
+        echo " 	SSLCipherSuite ALL:!EXP:!NULL:!ADH:!LOW:!SSLv2:!SSLv3:!MD5:!RC4"
+		echo " 	</VirtualHost>"
 	} >> "$netdb_vhost"
 }
 
@@ -215,7 +215,7 @@ ln -s /var/log/netdb/control.log /var/www/html/netdb/control.log
 # Update document root permission and fire up the web server
 echo "Updating NetDB document root permissions"
 chown -R apache:apache /var/www/html/netdb
-restorecron -Rv /var/www/html
+restorecon -Rv /var/www/html
 systemctl enable httpd && systemctl start httpd
 
 # Create firewall rule
