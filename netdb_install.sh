@@ -19,13 +19,15 @@ MYSQL_ROOT=""
 echo "Enter your new root password: "
 read -rs MYSQL_ROOT_PASS
 echo "Enter netdb RW password: "
-read -rs MYSQL_USER_PW
+read -rs MYSQL_USER_RW
 echo "Enter netdb RO password: "
 read -rs MYSQL_USER_RO
 
 # Add EPEL Repository and install packages
+echo "Installing EPEL Repo"
 yum -y install epel-release
 
+echo "Installing NetDB Packages"
 yum install -y gcc unzip make bzip2 curl lynx ftp patch mariadb mariadb-server httpd httpd-tools perl mrtg \
 perl-List-MoreUtils perl-DBI perl-Net-DNS perl-Math-Round perl-Module-Implementation \
 perl-Params-Validate perl-DateTime-Locale perl-DateTime-TimeZone perl-DateTime \
@@ -34,16 +36,19 @@ perl-Net-IP perl-AppConfig perl-Proc-Queue perl-Proc-ProcessTable perl-NetAddr-I
 perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN expect mod_ssl git expect
 
 # Install remaining perl modules
+echo "Installing NetDB Perl dependencies"
 for mod in Attribute::Handlers Data::UUID Net::MAC::Vendor Net::SSH::Expect File::Flock ExtUtils::Constant
 do y|cpan $mod
 done;
 
 # Create netdb user
 #TODO Have netdb function as a regular user
+echo "Creating netdb user"
 useradd netdb && usermod -aG wheel netdb
 
 
 #TODO have this process replaced by git clone <url> /opt/
+echo "Clonning git repository"
 git clone https://github.com/EarlRamirez/netdb.git /opt/netdb
 chown -R netdb.netdb /opt/netdb
 mkdir -pv /var/log/netdb
@@ -60,6 +65,7 @@ cp /opt/netdb/extra/netdb-logrotate /etc/logrotate.d/
 #####################
 # Configure Mariadb #
 #####################
+echo "Starting and configuring MariaDB"
 systemctl enable mariadb && systemctl start mariadb
 
 # Automated configuration for securing MySQL/MariaDB		
@@ -89,9 +95,10 @@ systemctl enable mariadb && systemctl start mariadb
 		echo ""
 
 # Create DB tables and users 
+echo "Creating the database and tables"
 mysql -u root --password=$MYSQL_ROOT_PASS --execute="create database if not exists netdb"
 mysql -u root --password=$MYSQL_ROOT_PASS netdb < /opt/netdb/createnetdb.sql
-mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT ALL PRIVILEGES ON netdb.* TO netdb@localhost IDENTIFIED BY '$MYSQL_USER_PW';"
+mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT ALL PRIVILEGES ON netdb.* TO netdb@localhost IDENTIFIED BY '$MYSQL_USER_RW';"
 mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT SELECT,INSERT,UPDATE,LOCK TABLES,SHOW VIEW,DELETE ON netdb.* TO 'netdbadmin'@'localhost' IDENTIFIED BY '$MYSQL_USER_RO';"
 
 #TODO Update /etc/netdb.conf with credentials
@@ -114,10 +121,11 @@ cp /opt/netdb/netdb.cgi.pl /var/www/cgi-bin/netdb.pl
 # Create netdb web UI credentials
 #TODO replace with DB credentials
 touch /var/www/html/netdb/netdb.passwd
-
+echo "Enter your netdb web UI password"
 htpasswd -c -B /var/www/html/netdb/netdb.passwd netdb
 
 # Create SSL Self-signed certificate
+echo "Creating self-signed SSL certificate"
 GEN_CERT="openssl req -x509 -nodes -days 1095 -newkey rsa:2048 -keyout /etc/pki/tls/private/netdb-selfsigned.key -out /etc/pki/tls/certs/netdb-selfsigned.crt"
 
 # Automated configuration for securing MySQL/MariaDB		
@@ -160,40 +168,40 @@ echo ""
 set_vhost() {
 	netdb_vhost=/etc/httpd/conf.d/netdb.conf
 	{
-		echo "<VirtualHost _default_:80>"
-		echo	 "DocumentRoot /var/www/html/netdb/"
-		echo	 "ServerName $FQDN"
-		echo		"<Directory />"
-		echo			"Options FollowSymlinks"
-		echo			"AllowOverride None"
-		echo 		"</Directory>"
-		echo 		"<Directory /var/www/html/netdb>"
-		echo			"Options Indexes FollowSymlinks MultiViews"
-		echo			"AllowOverride None"
-		echo			"Redirect /index.html /cgi-bin/netdb.pl"
-		echo			"AuthType basic"
-		echo			"AuthName "NetDB Login""
-		echo			"AuthUserFile /var/www/html/netdb/netdb.passwd"
-		echo			"Require valid-user"
-		echo 		"</Directory>"
-		echo 	"ScriptAlias /cgi-bin/ /var/www/cgi-bin/"
-		echo 		"<Directory "/var/www/cgi-bin">"
-		echo 			"Options +ExecCGI -MultiViews +FollowSymlinks"
-		echo 			"Allow from all"
-		echo 			"AuthType basic"
-		echo			"AuthName "NetDB Login""
-		echo	 		"AuthUserFile /var/www/html/netdb/netdb.passwd"
-		echo	 		"Require valid-user"
-		echo 		"</Directory>"
-		echo 	"ErrorLog /var/log/httpd/netdb_error.log"
-		echo 	"Customlog /var/log/httpd/access.log combined"
-        echo 	"SSLEngine on"
-        echo 	"SSLCertificateFile /etc/pki/tls/certs/netdb-selfsigned.crt"
-        echo 	"SSLCertificateKeyFile /etc/pki/tls/private/netdb-selfsigned.key"
-        echo 	"SSLProtocol -SSLv3 -TLSv1 TLSv1.1 TLSv1.2"
-        echo 	"SSLHonorCipherOrder On"
-        echo 	"SSLCipherSuite ALL:!EXP:!NULL:!ADH:!LOW:!SSLv2:!SSLv3:!MD5:!RC4"
-		echo 	"</VirtualHost>"
+		echo" <VirtualHost _default_:80>"
+		echo"	 DocumentRoot /var/www/html/netdb/"
+		echo"	 ServerName $FQDN"
+		echo"		<Directory />"
+		echo"			Options FollowSymlinks"
+		echo"			AllowOverride None"
+		echo" 		</Directory>"
+		echo" 		<Directory /var/www/html/netdb>"
+		echo"			Options Indexes FollowSymlinks MultiViews"
+		echo"			AllowOverride None"
+		echo"			Redirect /index.html /cgi-bin/netdb.pl"
+		echo"			AuthType basic"
+		echo'			AuthName "NetDB Login"'
+		echo"			AuthUserFile /var/www/html/netdb/netdb.passwd"
+		echo"			Require valid-user"
+		echo" 		</Directory>"
+		echo" 	ScriptAlias /cgi-bin/ /var/www/cgi-bin/"
+		echo" 		<Directory "/var/www/cgi-bin">"
+		echo" 			Options +ExecCGI -MultiViews +FollowSymlinks"
+		echo" 			Allow from all"
+		echo" 			AuthType basic"
+		echo'			AuthName "NetDB Login"'
+		echo"	 		AuthUserFile /var/www/html/netdb/netdb.passwd"
+		echo"	 		Require valid-user"
+		echo" 		</Directory>"
+		echo" 	ErrorLog /var/log/httpd/netdb_error.log"
+		echo" 	Customlog /var/log/httpd/access.log combined"
+        echo" 	SSLEngine on"
+        echo" 	SSLCertificateFile /etc/pki/tls/certs/netdb-selfsigned.crt"
+        echo" 	SSLCertificateKeyFile /etc/pki/tls/private/netdb-selfsigned.key"
+        echo" 	SSLProtocol -SSLv3 -TLSv1 TLSv1.1 TLSv1.2"
+        echo" 	SSLHonorCipherOrder On"
+        echo" 	SSLCipherSuite ALL:!EXP:!NULL:!ADH:!LOW:!SSLv2:!SSLv3:!MD5:!RC4"
+		echo" 	</VirtualHost>"
 	} >> "$netdb_vhost"
 }
 
@@ -205,10 +213,13 @@ set_vhost
 ln -s /var/log/netdb/control.log /var/www/html/netdb/control.log
 
 # Update document root permission and fire up the web server
+echo "Updating NetDB document root permissions"
 chown -R apache:apache /var/www/html/netdb
+restorecron -Rv /var/www/html
 systemctl enable httpd && systemctl start httpd
 
 # Create firewall rule
+echo "Permitting port 80 and 443"
 firewall-cmd --permanent --add-service={http,https} && firewall-cmd --reload
 
 # Add hostname to /etc/hosts
