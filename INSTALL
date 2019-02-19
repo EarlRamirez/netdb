@@ -37,7 +37,7 @@ mkdir /var/log/netdb
 chown -R netdb /opt/netdb/
 chgrp -R netdb /opt/netdb/
 chown netdb /var/log/netdb/
-chgrp www-data /var/log/netdb/
+chgrp apache /var/log/netdb/
 
 usermod -a -G adm netdb
 

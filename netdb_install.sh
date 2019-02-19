@@ -15,13 +15,13 @@ HOSTNAME="$(hostname)"
 FQDN="$(hostname --fqdn)"
 IP_ADDR="$(ip -o -4 addr show dev eth0 | sed 's/.* inet \([^/]*\).*/\1/')"
 MYSQL_ROOT=""
-echo "Enter your new root password: "
+echo -n "Enter your new root password: "
 read -rs MYSQL_ROOT_PASS
 #MYSQL_ROOT_PASS=""
-echo "Enter netdb RW password: "
+echo -n "Enter netdb RW password: "
 read -rs MYSQL_USER_PW
 #MYSQL_USER_PW=""
-echo "Enter netdb RW password: "
+echo -n "Enter netdb RW password: "
 read -rs MYSQL_USER_RO
 MYSQL_USER_RO=""
 
@@ -33,7 +33,7 @@ perl-List-MoreUtils perl-DBI perl-Net-DNS perl-Math-Round perl-Module-Implementa
 perl-Params-Validate perl-DateTime-Locale perl-DateTime-TimeZone perl-DateTime \
 perl-DateTime-Format-MySQL perl-Time-HiRes perl-Digest-HMAC perl-Digest-SHA1 \
 perl-Net-IP perl-AppConfig perl-Proc-Queue perl-Proc-ProcessTable perl-NetAddr-IP perl-IO-Socket-IP \
-perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN expect mod_ssl
+perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN expect mod_ssl git
 
 # Install remaining perl modules
 for mod in Attribute::Handlers Data::UUID Net::MAC::Vendor Net::SSH::Expect File::Flock ExtUtils::Constant
@@ -41,13 +41,13 @@ do cpan $mod
 done;
 
 # Create netdb user
-useradd netdb
-usermod -aG wheel netdb
+useradd netdb && usermod -aG wheel netdb
 
 # Create directory and update permission
 # Download netdb-1.13.2.tar.gz from Sourceforge https://sourceforge.net/projects/netdbtracking/files/latest/download
 #TODO have this process replaced by git clone <url> /opt/
-tar -xzvf netdb-1.13.2.tar.gz -C /opt/
+
+git clone https://github.com/EarlRamirez/netdb.git /opt/netdb
 chown -R netdb.netdb /opt/netdb
 mkdir -pv /var/log/netdb
 chown -R netdb.apache /var/log/netdb
@@ -92,6 +92,8 @@ systemctl enable mariadb && systemctl start mariadb
 		echo ""
 
 # Create DB tables and users 
+#TODO Create DB
+mysql -u root --password=$MYSQL_ROOT_PASS --execute="create database if not exists netdb"
 mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;source /opt/netdb/createnetdb.sql"
 mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT ALL PRIVILEGES ON netdb.* TO netdb@localhost IDENTIFIED BY '$MYSQL_USER_PW';"
 mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT SELECT,INSERT,UPDATE,LOCK TABLES,SHOW VIEW,DELETE ON netdb.* TO 'netdbadmin'@'localhost' IDENTIFIED BY '$MYSQL_USER_RO';"
@@ -142,6 +144,7 @@ GENERATE_CERT=$(expect -c "
 	expect eof
 ")
 echo "$GENERATE_CERT"
+
 echo ""
 
 # Create Diffie-Hellman group
@@ -159,7 +162,7 @@ echo ""
 set_vhost() {
 	netdb_vhost=/etc/httpd/conf.d/netdb.conf
 	{
-		echo "<VirtualHost _default_:443>"
+		echo "<VirtualHost _default_:80>"
 		echo	 "DocumentRoot /var/www/html/netdb/"
 		echo	 "ServerName $FQDN"
 		echo		"<Directory />"
@@ -186,17 +189,17 @@ set_vhost() {
 		echo 		"</Directory>"
 		echo 	"ErrorLog /var/log/httpd/netdb_error.log"
 		echo 	"Customlog /var/log/httpd/access.log combined"
-        echo 	"SSLEngine on"
-        echo 	"SSLCertificateFile /etc/pki/tls/certs/netdb-selfsigned.crt"
-        echo 	"SSLCertificateKeyFile /etc/pki/tls/private/netdb-selfsigned.key"
-        echo 	"SSLProtocol -SSLv3 TLSv1 TLSv1.1 TLSv1.2"
-        echo 	"SSLHonorCipherOrder On"
-        echo 	"SSLCipherSuite ALL:!EXP:!NULL:!ADH:!LOW:!SSLv2:!SSLv3:!MD5:!RC4"
+        echo 	"#SSLEngine on"
+        echo 	"#SSLCertificateFile /etc/pki/tls/certs/netdb-selfsigned.crt"
+        echo 	"#SSLCertificateKeyFile /etc/pki/tls/private/netdb-selfsigned.key"
+        echo 	"#SSLProtocol -SSLv3 TLSv1 TLSv1.1 TLSv1.2"
+        echo 	"#SSLHonorCipherOrder On"
+        echo 	"#SSLCipherSuite ALL:!EXP:!NULL:!ADH:!LOW:!SSLv2:!SSLv3:!MD5:!RC4"
 		echo 	"</VirtualHost>"
 	} >> "$netdb_vhost"
 }
 
-set_vhost()
+set_vhost
 
 #TODO Create SSL certificate
 
@@ -212,7 +215,7 @@ chown -R apache:apache /var/www/html/netdb
 systemctl enable httpd && systemctl start httpd
 
 # Create firewall rule
-firewall-cmd --permanent --add-service=https && firewall-cmd --reload
+firewall-cmd --permanent --add-service=http && firewall-cmd --reload
 
 # Add hostname to /etc/hosts
 echo  $IP_ADDR	$hostname >> /etc/hosts
