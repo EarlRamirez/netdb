@@ -2,6 +2,7 @@
 
 # Install and Configure NetDB on CentOS/RHEL Linux
 # This script aims to automate the installation of NetDB and potentially use it for docker containers.
+#TODO Configure installation logging
 
 # Variables
 COUNTRY_NAME=US
@@ -13,19 +14,19 @@ COMMON_NAME=netdb
 EMAIL=netdb@localdomain.com
 HOSTNAME="$(hostname)"
 FQDN="$(hostname --fqdn)"
-IP_ADDR="$(ip -o -4 addr show dev eth0 | sed 's/.* inet \([^/]*\).*/\1/')"
+IP_ADDR="$(ip -o -4 addr show dev ens10 | sed 's/.* inet \([^/]*\).*/\1/')"
 MYSQL_ROOT=""
-echo -n "Enter your new root password: "
+echo "Enter your new root password: "
 read -rs MYSQL_ROOT_PASS
-echo -n "Enter netdb RW password: "
+echo "Enter netdb RW password: "
 read -rs MYSQL_USER_PW
-echo -n "Enter netdb RW password: "
+echo "Enter netdb RO password: "
 read -rs MYSQL_USER_RO
 
 # Add EPEL Repository and install packages
 yum -y install epel-release
 
-yum install -y gcc unzip make bzip2 curl lynx ftp patch mariadb mariadb-server httpd httpd-tools perl \
+yum install -y gcc unzip make bzip2 curl lynx ftp patch mariadb mariadb-server httpd httpd-tools perl mrtg \
 perl-List-MoreUtils perl-DBI perl-Net-DNS perl-Math-Round perl-Module-Implementation \
 perl-Params-Validate perl-DateTime-Locale perl-DateTime-TimeZone perl-DateTime \
 perl-DateTime-Format-MySQL perl-Time-HiRes perl-Digest-HMAC perl-Digest-SHA1 \
@@ -88,9 +89,8 @@ systemctl enable mariadb && systemctl start mariadb
 		echo ""
 
 # Create DB tables and users 
-#TODO Create DB
 mysql -u root --password=$MYSQL_ROOT_PASS --execute="create database if not exists netdb"
-mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;source /opt/netdb/createnetdb.sql"
+mysql -u root --password=$MYSQL_ROOT_PASS netdb < /opt/netdb/createnetdb.sql
 mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT ALL PRIVILEGES ON netdb.* TO netdb@localhost IDENTIFIED BY '$MYSQL_USER_PW';"
 mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT SELECT,INSERT,UPDATE,LOCK TABLES,SHOW VIEW,DELETE ON netdb.* TO 'netdbadmin'@'localhost' IDENTIFIED BY '$MYSQL_USER_RO';"
 
@@ -106,7 +106,7 @@ ln -s /opt/netdb/NetDB.pm /usr/lib64/perl5/NetDB.pm
 cp /opt/netdb/netdb.conf /etc/
 touch /opt/netdb/data/devicelist.csv
 cp /opt/netdb/netdb-cgi.conf /etc/
-mkdir -pv /var/www/html/netdb
+mkdir -pv /var/www/html/netdb/mrtg
 touch /var/www/html/netdb/netdbReport.csv
 cp -r /opt/netdb/extra/depends /var/www/html/netdb/
 cp /opt/netdb/netdb.cgi.pl /var/www/cgi-bin/netdb.pl
@@ -115,7 +115,7 @@ cp /opt/netdb/netdb.cgi.pl /var/www/cgi-bin/netdb.pl
 #TODO replace with DB credentials
 touch /var/www/html/netdb/netdb.passwd
 
-htpasswd -c /var/www/html/netdb/netdb.passwd netdb
+htpasswd -c -B /var/www/html/netdb/netdb.passwd netdb
 
 # Create SSL Self-signed certificate
 GEN_CERT="openssl req -x509 -nodes -days 1095 -newkey rsa:2048 -keyout /etc/pki/tls/private/netdb-selfsigned.key -out /etc/pki/tls/certs/netdb-selfsigned.crt"
@@ -152,11 +152,11 @@ echo ""
 
 # Append SSLOpenSSLConfCmd to the certificate
 echo "Appening DH Parameters to Certificate"
-cat /etc/ssl/certs/dhparam.pem | sudo tee -a /etc/ssl/certs/snipeit-selfsigned.crt
+cat /etc/ssl/certs/dhparam.pem | sudo tee -a /etc/ssl/certs/netdb-selfsigned.crt
 echo ""
 
 
-#TODO Create virtual host
+#TODO Create virtual host and replace Apache with Nginx
 set_vhost() {
 	netdb_vhost=/etc/httpd/conf.d/netdb.conf
 	{
@@ -187,18 +187,17 @@ set_vhost() {
 		echo 		"</Directory>"
 		echo 	"ErrorLog /var/log/httpd/netdb_error.log"
 		echo 	"Customlog /var/log/httpd/access.log combined"
-        echo 	"#SSLEngine on"
-        echo 	"#SSLCertificateFile /etc/pki/tls/certs/netdb-selfsigned.crt"
-        echo 	"#SSLCertificateKeyFile /etc/pki/tls/private/netdb-selfsigned.key"
-        echo 	"#SSLProtocol -SSLv3 TLSv1 TLSv1.1 TLSv1.2"
-        echo 	"#SSLHonorCipherOrder On"
-        echo 	"#SSLCipherSuite ALL:!EXP:!NULL:!ADH:!LOW:!SSLv2:!SSLv3:!MD5:!RC4"
+        echo 	"SSLEngine on"
+        echo 	"SSLCertificateFile /etc/pki/tls/certs/netdb-selfsigned.crt"
+        echo 	"SSLCertificateKeyFile /etc/pki/tls/private/netdb-selfsigned.key"
+        echo 	"SSLProtocol -SSLv3 -TLSv1 TLSv1.1 TLSv1.2"
+        echo 	"SSLHonorCipherOrder On"
+        echo 	"SSLCipherSuite ALL:!EXP:!NULL:!ADH:!LOW:!SSLv2:!SSLv3:!MD5:!RC4"
 		echo 	"</VirtualHost>"
 	} >> "$netdb_vhost"
 }
 
 set_vhost
-
 
 #TODO Add crontab entries, don't forget you need to run it as root to get past the lockfile (temp fix)
 
