@@ -168,31 +168,31 @@ echo ""
 set_vhost() {
 	netdb_vhost=/etc/httpd/conf.d/netdb.conf
 	{
-		echo " <VirtualHost _default_:80>"
-		echo "	 DocumentRoot /var/www/html/netdb/"
+		echo "<VirtualHost _default_:443>"
+		echo "   DocumentRoot /var/www/html/netdb/"
 		echo "	 ServerName $FQDN"
-		echo "		<Directory />"
-		echo "			Options FollowSymlinks"
-		echo "			AllowOverride None"
-		echo " 		</Directory>"
-		echo " 		<Directory /var/www/html/netdb>"
-		echo "			Options Indexes FollowSymlinks MultiViews"
-		echo "			AllowOverride None"
-		echo "			Redirect /index.html /cgi-bin/netdb.pl"
-		echo "			AuthType basic"
-		echo '			AuthName "NetDB Login"'
-		echo "			AuthUserFile /var/www/html/netdb/netdb.passwd"
-		echo "			Require valid-user"
-		echo " 		</Directory>"
+		echo "	   <Directory />"
+		echo "		  Options FollowSymlinks"
+		echo "		  AllowOverride None"
+		echo " 	   </Directory>"
+		echo " 	   <Directory /var/www/html/netdb>"
+		echo "	      Options Indexes FollowSymlinks MultiViews"
+		echo "		  AllowOverride None"
+		echo "		  Redirect /index.html /cgi-bin/netdb.pl"
+		echo "		  AuthType basic"
+		echo '		  AuthName "NetDB Login"'
+		echo "		  AuthUserFile /var/www/html/netdb/netdb.passwd"
+		echo "		  Require valid-user"
+		echo " 	   </Directory>"
 		echo " 	ScriptAlias /cgi-bin/ /var/www/cgi-bin/"
-		echo " 		<Directory "/var/www/cgi-bin">"
-		echo " 			Options +ExecCGI -MultiViews +FollowSymlinks"
-		echo " 			Allow from all"
-		echo " 			AuthType basic"
-		echo '			AuthName "NetDB Login"'
-		echo "	 		AuthUserFile /var/www/html/netdb/netdb.passwd"
-		echo "	 		Require valid-user"
-		echo " 		</Directory>"
+		echo " 	   <Directory "/var/www/cgi-bin">"
+		echo " 		  Options +ExecCGI -MultiViews +FollowSymlinks"
+		echo " 		  Allow from all"
+		echo " 		  AuthType basic"
+		echo '		  AuthName "NetDB Login"'
+		echo "	 	  AuthUserFile /var/www/html/netdb/netdb.passwd"
+		echo "	 	  Require valid-user"
+		echo " 	   </Directory>"
 		echo " 	ErrorLog /var/log/httpd/netdb_error.log"
 		echo " 	Customlog /var/log/httpd/access.log combined"
         echo " 	SSLEngine on"
@@ -201,7 +201,7 @@ set_vhost() {
         echo " 	SSLProtocol -SSLv3 -TLSv1 TLSv1.1 TLSv1.2"
         echo " 	SSLHonorCipherOrder On"
         echo " 	SSLCipherSuite ALL:!EXP:!NULL:!ADH:!LOW:!SSLv2:!SSLv3:!MD5:!RC4"
-		echo " 	</VirtualHost>"
+		echo "</VirtualHost>"
 	} >> "$netdb_vhost"
 }
 
@@ -219,9 +219,11 @@ restorecon -Rv /var/www/html
 systemctl enable httpd && systemctl start httpd
 
 # Create firewall rule
-echo "Permitting port 80 and 443"
-firewall-cmd --permanent --add-service={http,https} && firewall-cmd --reload
+echo "Permitting port and 443"
+firewall-cmd --permanent --add-service=https && firewall-cmd --reload
 
 # Add hostname to /etc/hosts
 echo  $IP_ADDR	$hostname >> /etc/hosts
+
+echo "Point your browser to https://$IP_ADDR to access the web UI"
 
