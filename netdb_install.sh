@@ -34,10 +34,10 @@ perl-DateTime-Format-MySQL perl-Time-HiRes perl-Digest-HMAC perl-Digest-SHA1 \
 perl-Net-IP perl-AppConfig perl-Proc-Queue perl-Proc-ProcessTable perl-NetAddr-IP perl-IO-Socket-IP \
 perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN expect mod_ssl git expect
 
-# Install remaining perl modules
+# Install remaining perl modules use '-f' to force the installtion of File::Flock
 echo "Installing NetDB Perl dependencies..."
 for mod in Attribute::Handlers Data::UUID Net::MAC::Vendor Net::SSH::Expect File::Flock ExtUtils::Constant
-do y|cpan $mod
+do y|cpan -f $mod
 done;
 
 # Create netdb user
@@ -97,8 +97,8 @@ systemctl enable mariadb && systemctl start mariadb
 echo "Creating the database and tables...."
 mysql -u root --password=$MYSQL_ROOT_PASS --execute="create database if not exists netdb"
 mysql -u root --password=$MYSQL_ROOT_PASS netdb < /opt/netdb/createnetdb.sql
-mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT ALL PRIVILEGES ON netdb.* TO netdb@localhost IDENTIFIED BY '$MYSQL_USER_RW';"
-mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT SELECT,INSERT,UPDATE,LOCK TABLES,SHOW VIEW,DELETE ON netdb.* TO 'netdbadmin'@'localhost' IDENTIFIED BY '$MYSQL_USER_RO';"
+mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT ALL PRIVILEGES ON netdb.* TO netdbadmin@localhost IDENTIFIED BY '$MYSQL_USER_RW';"
+mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT SELECT,INSERT,UPDATE,LOCK TABLES,SHOW VIEW,DELETE ON netdb.* TO 'netdbuser'@'localhost' IDENTIFIED BY '$MYSQL_USER_RO';"
 
 #TODO Update /etc/netdb.conf with credentials
 
@@ -234,4 +234,6 @@ echo  $IP_ADDR	$hostname >> /etc/hosts
 echo "Point your browser to https://$IP_ADDR to access the web UI"
 
 #TODO update OUI link in crontab
+#TODO [Fix] (https://sourceforge.net/p/netdbtracking/discussion/939988/thread/77fbf56a/)
+
 
