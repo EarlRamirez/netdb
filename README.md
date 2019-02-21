@@ -24,7 +24,12 @@ The installations script is geared toward a vanilla installation of your favouri
 
 - Install Perl modules that is required for NetDB
 
-   >cpan Attribute::Handlers && cpan Data::UUID && cpan Net::MAC::Vendor && cpan Net::SSH::Expect && cpan File::Flock && cpan ExtUtils::Constant
+   >cpan Attribute::Handlers
+    cpan Data::UUID
+    cpan Net::MAC::Vendor
+    cpan Net::SSH::Expect
+    cpan File::Flock
+    cpan ExtUtils::Constant
 
 - Create NetDB user 
 
@@ -36,11 +41,14 @@ The installations script is geared toward a vanilla installation of your favouri
 
 - Change the directory ownership and create the necessary directories
 
-   >chown -R netdb.netdb /opt/netdb && mkdir -pv /var/log/netdb && chown -R netdb.apache /var/log/netdb
+   >chown -R netdb.netdb /opt/netdb
+    mkdir -pv /var/log/netdb
+    chown -R netdb.apache /var/log/netdb
 
 - Create Symbolic NetDB symbolic link
 
-   >ln -s /opt/netdb/netdb.pl /usr/local/bin/netdb && ln -s /opt/netdb/netdbctl.pl /usr/local/bin/netdbctl
+   >ln -s /opt/netdb/netdb.pl /usr/local/bin/netdb
+    ln -s /opt/netdb/netdbctl.pl /usr/local/bin/netdbctl
 
 - Copy control log rotation script
 
