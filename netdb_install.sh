@@ -110,18 +110,18 @@ ln -s /opt/netdb/NetDB.pm /usr/lib64/perl5/NetDB.pm
 # Create directories and copy required files
 cp /opt/netdb/netdb.conf /etc/
 touch /opt/netdb/data/devicelist.csv
+mkdir -pv /var/www/html/netdb
 cp /opt/netdb/netdb-cgi.conf /etc/
 touch /var/www/html/netdb/netdbReport.csv
 cp -r /opt/netdb/extra/depends /var/www/html/netdb/
 cp /opt/netdb/netdb.cgi.pl /var/www/cgi-bin/netdb.pl
 
 #TODO Configure MRTG virtual host, update alias path and trusted network
-mkdir -pv /var/www/html/netdb/mrtg
 mv /etc/mrtg/mrtg.cfg /etc/mrtg/mrtg.cfg.bkp
-cp /var/www/mrtg/.* /var/www/html/netdb/mrtg/
+cp /opt/netdb/extra/mrtg.cfg /etc/mrtg/mrtg.cfg
+cp -r /opt/netdb/extra/mrtg /var/www/html/netdb/
 rm -rf /var/www/mrtg
-cp /opt/netdb/extras/mrtg.cfg /etc/mrtg/mrtg.cfg
-indexmaker --output=/var/www/html/netdb/mrtg/index.html /etc/mrtg/mrtg.cfg
+indexmaker --title="NetDB Graphs" --show=week /opt/netdb/extra/mrtg.cfg > /var/www/html/netdb/mrtg/index.html
 
 
 # Create netdb web UI credentials
@@ -232,4 +232,6 @@ firewall-cmd --permanent --add-service=https && firewall-cmd --reload
 echo  $IP_ADDR	$hostname >> /etc/hosts
 
 echo "Point your browser to https://$IP_ADDR to access the web UI"
+
+#TODO update OUI link in crontab
 
