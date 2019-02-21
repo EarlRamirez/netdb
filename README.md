@@ -16,46 +16,46 @@ The installations script is geared toward a vanilla installation of your favouri
 
 - Install epel repo and update the OS
 
-..._yum install -y epel-release && yum -y update_
+   >yum install -y epel-release && yum -y update
 
 - Install the necessary packages
 
->_yum install -y gcc unzip make bzip2 curl lynx ftp patch mariadb mariadb-server httpd httpd-tools perl mrtg_ \
->_perl-List-MoreUtils perl-DBI perl-Net-DNS perl-Math-Round perl-Module-Implementation_ \
->_perl-Params-Validate perl-DateTime-Locale perl-DateTime-TimeZone perl-DateTime_ \
->_perl-DateTime-Format-MySQL perl-Time-HiRes perl-Digest-HMAC perl-Digest-SHA1_ \
-_perl-Net-IP perl-AppConfig perl-Proc-Queue perl-Proc-ProcessTable perl-NetAddr-IP perl-IO-Socket-IP_ \
->_perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN expect mod_ssl git expect_```
+   >yum install -y gcc unzip make bzip2 curl lynx ftp patch mariadb mariadb-server httpd httpd-tools perl mrtg \
+   >perl-List-MoreUtils perl-DBI perl-Net-DNS perl-Math-Round perl-Module-Implementation \
+   >perl-Params-Validate perl-DateTime-Locale perl-DateTime-TimeZone perl-DateTime \
+   >perl-DateTime-Format-MySQL perl-Time-HiRes perl-Digest-HMAC perl-Digest-SHA1 \
+   >perl-Net-IP perl-AppConfig perl-Proc-Queue perl-Proc-ProcessTable perl-NetAddr-IP perl-IO-Socket-IP \
+   >perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN expect mod_ssl git expect
 
 - Install Perl modules that is required for NetDB
 
-   ```_cpan Attribute::Handlers_```
+   >cpan Attribute::Handlers
 
-   ..._cpan Data::UUID_
+   >cpan Data::UUID
 
-   ..._cpan Net::MAC::Vendor_ 
+   >cpan Net::MAC::Vendor
 
-   ..._cpan Net::SSH::Expect_
+   >cpan Net::SSH::Expect
 
-..._cpan File::Flock_
+   >cpan File::Flock
 
-..._cpan ExtUtils::Constant_
+   >cpan ExtUtils::Constant
 
 - Create NetDB user 
 
-..._useradd netdb && usermod -aG wheel netdb_
+   >useradd netdb && usermod -aG wheel netdb
 
 - Clone NetDB repository to /opt/netdb
 
-..._git clone https://github.com/EarlRamirez/netdb.git /opt/netdb_
+   >git clone https://github.com/EarlRamirez/netdb.git /opt/netdb
 
 - Change the directory ownership and create the necessary directories
 
-..._chown -R netdb.netdb /opt/netdb_
+   >chown -R netdb.netdb /opt/netdb
 
-..._mkdir -pv /var/log/netdb_
+   >mkdir -pv /var/log/netdb
 
-..._chown -R netdb.apache /var/log/netdb_
+   >chown -R netdb.apache /var/log/netdb
 
 ----------
 ### Configuring and Adding Devices
