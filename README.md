@@ -31,10 +31,11 @@ The installations script is geared toward a vanilla installation of your favouri
 
 ..._cpan Attribute::Handlers_
 
-..._cpan Data::UUID_
+ ..._cpan Data::UUID_
 
-..._cpan Net::MAC::Vendor_ 
-..._cpan Net::SSH::Expect_
+ ..._cpan Net::MAC::Vendor_ 
+
+ ..._cpan Net::SSH::Expect_
 
 ..._cpan File::Flock_
 
