@@ -38,6 +38,27 @@ The installations script is geared toward a vanilla installation of your favouri
 
    >chown -R netdb.netdb /opt/netdb && mkdir -pv /var/log/netdb && chown -R netdb.apache /var/log/netdb
 
+- Create Symbolic NetDB symbolic link
+
+   >ln -s /opt/netdb/netdb.pl /usr/local/bin/netdb && ln -s /opt/netdb/netdbctl.pl /usr/local/bin/netdbctl
+
+- Copy control log rotation script
+
+   >cp /opt/netdb/extra/netdb-logrotate /etc/logrotate.d/
+
+- Configure MariaDB
+
+   >systemctl enable mariadb && systemctl start mariadb
+
+   >mysql_secure_installation
+
+   >mysql -u root -p (Login to MariaDB/MySQL)
+      ````CREATE DATABASE netdb;   
+		  use netdb;
+		  source /opt/netdb/createdb.sql;````
+		  
+
+
 ----------
 ### Configuring and Adding Devices
 
