@@ -10,7 +10,6 @@ STATE=Florida
 LOCALITY=Miami
 ORGANISATION=Networking
 ORGANISATION_UNIT=NetworkTracking
-COMMON_NAME=netdb
 EMAIL=netdb@localdomain.com
 HOSTNAME="$(hostname)"
 FQDN="$(hostname --fqdn)"
@@ -109,14 +108,21 @@ ln -s /opt/netdb/NetDBHelper.pm /usr/lib64/perl5/NetDBHelper.pm
 ln -s /opt/netdb/NetDB.pm /usr/lib64/perl5/NetDB.pm
 
 # Create directories and copy required files
-#TODO Configure MRTG graph
 cp /opt/netdb/netdb.conf /etc/
 touch /opt/netdb/data/devicelist.csv
 cp /opt/netdb/netdb-cgi.conf /etc/
-mkdir -pv /var/www/html/netdb/mrtg
 touch /var/www/html/netdb/netdbReport.csv
 cp -r /opt/netdb/extra/depends /var/www/html/netdb/
 cp /opt/netdb/netdb.cgi.pl /var/www/cgi-bin/netdb.pl
+
+#TODO Configure MRTG virtual host, update alias path and trusted network
+mkdir -pv /var/www/html/netdb/mrtg
+mv /etc/mrtg/mrtg.cfg /etc/mrtg/mrtg.cfg.bkp
+cp /var/www/mrtg/.* /var/www/html/netdb/mrtg/
+rm -rf /var/www/mrtg
+cp /opt/netdb/extras/mrtg.cfg /etc/mrtg/mrtg.cfg
+indexmaker --output=/var/www/html/netdb/mrtg/index.html /etc/mrtg/mrtg.cfg
+
 
 # Create netdb web UI credentials
 #TODO replace with DB credentials
@@ -144,7 +150,7 @@ GENERATE_CERT=$(expect -c "
 	expect \"Organizational Unit Name (eg, section) \[\]:\"
 	send \"$ORGANISATION_UNIT\r\"
 	expect \"Common Name (eg, your name or your server's hostname) \[\]:\"
-	send \"$COMMON_NAME\r\"
+	send \"$HOSTNAME\r\"
 	expect \"Email Address \[\]:\"
 	send \"$EMAIL\r\"
 	expect eof
@@ -176,7 +182,7 @@ set_vhost() {
 		echo "		  AllowOverride None"
 		echo " 	   </Directory>"
 		echo " 	   <Directory /var/www/html/netdb>"
-		echo "	      Options Indexes FollowSymlinks MultiViews"
+		echo "	      Options -Indexes +FollowSymlinks +MultiViews"
 		echo "		  AllowOverride None"
 		echo "		  Redirect /index.html /cgi-bin/netdb.pl"
 		echo "		  AuthType basic"
