@@ -53,9 +53,10 @@ The installations script is geared toward a vanilla installation of your favouri
    >mysql_secure_installation
 
    >mysql -u root -p (Login to MariaDB/MySQL)
-      ````CREATE DATABASE netdb;   
-		  use netdb;
-		  source /opt/netdb/createdb.sql;````
+
+       >CREATE DATABASE netdb;  
+	   >use netdb;   
+	   >source /opt/netdb/createdb.sql;  
 		  
 
 
