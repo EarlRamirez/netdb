@@ -20,12 +20,7 @@ The installations script is geared toward a vanilla installation of your favouri
 
 - Install the necessary packages
 
-   >yum install -y gcc unzip make bzip2 curl lynx ftp patch mariadb mariadb-server httpd httpd-tools perl mrtg \
-   >perl-List-MoreUtils perl-DBI perl-Net-DNS perl-Math-Round perl-Module-Implementation \
-   >perl-Params-Validate perl-DateTime-Locale perl-DateTime-TimeZone perl-DateTime \
-   >perl-DateTime-Format-MySQL perl-Time-HiRes perl-Digest-HMAC perl-Digest-SHA1 \
-   >perl-Net-IP perl-AppConfig perl-Proc-Queue perl-Proc-ProcessTable perl-NetAddr-IP perl-IO-Socket-IP \
-   >perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN expect mod_ssl git expect
+   >yum install -y gcc unzip make bzip2 curl lynx ftp patch mariadb mariadb-server httpd httpd-tools perl mrtg perl-List-MoreUtils perl-DBI perl-Net-DNS perl-Math-Round perl-Module-Implementation perl-Params-Validate perl-DateTime-Locale perl-DateTime-TimeZone perl-DateTime perl-DateTime-Format-MySQL perl-Time-HiRes perl-Digest-HMAC perl-Digest-SHA1 perl-Net-IP perl-AppConfig perl-Proc-Queue perl-Proc-ProcessTable perl-NetAddr-IP perl-IO-Socket-IP perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN expect mod_ssl git expect
 
 - Install Perl modules that is required for NetDB
 
@@ -41,7 +36,7 @@ The installations script is geared toward a vanilla installation of your favouri
 
 - Change the directory ownership and create the necessary directories
 
-   ```chown -R netdb.netdb /opt/netdb && mkdir -pv /var/log/netdb && chown -R netdb.apache /var/log/netdb```
+   >chown -R netdb.netdb /opt/netdb && mkdir -pv /var/log/netdb && chown -R netdb.apache /var/log/netdb
 
 ----------
 ### Configuring and Adding Devices
