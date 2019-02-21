@@ -41,7 +41,7 @@ The installations script is geared toward a vanilla installation of your favouri
 
 - Change the directory ownership and create the necessary directories
 
-   >chown -R netdb.netdb /opt/netdb && mkdir -pv /var/log/netdb && chown -R netdb.apache /var/log/netdb
+   ```chown -R netdb.netdb /opt/netdb && mkdir -pv /var/log/netdb && chown -R netdb.apache /var/log/netdb```
 
 ----------
 ### Configuring and Adding Devices
