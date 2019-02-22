@@ -215,6 +215,23 @@ set_vhost
 
 #TODO Add crontab entries, don't forget you need to run it as root to get past the lockfile (temp fix)
 
+echo "#######################################" >> /etc/crontab
+echo "# NetDB Cron Jobs						 " >> /etc/crontab
+echo "#######################################" >> /etc/crontab
+echo "" >> /etc/crontab
+echo "# Update NetDB MAC and ARP table data" 
+echo "*/15 * * * * netdb /opt/netdb/netdbctl.pl -ud -a -m -nd > /dev/null"
+echo "" >> /etc/crontab
+echo "# Update static address flag from DHCP, relies on file to be up to date"
+echo "35 * * * * netdb /opt/netdb/netdbctl.pl -s  > /dev/null"
+echo "" >> /etc/crontab
+echo "# Force DNS updates on all current ARP entries once a day"
+echo "5 13 * * * netdb /opt/netdb/netdbctl.pl -f > /dev/null"
+echo "" >> /etc/crontab
+echo "# Cleanup netdb's SSH known_host file automatically (uncomment)"
+echo "00 5 * * * root rm -rf /home/netdb/.ssh/known_hosts 2> /dev/null"
+
+
 # Make Control log available from the Web UI
 ln -s /var/log/netdb/control.log /var/www/html/netdb/control.log
 
