@@ -219,18 +219,25 @@ echo "#######################################" >> /etc/crontab
 echo "# NetDB Cron Jobs						 " >> /etc/crontab
 echo "#######################################" >> /etc/crontab
 echo "" >> /etc/crontab
-echo "# Update NetDB MAC and ARP table data" 
-echo "*/15 * * * * netdb /opt/netdb/netdbctl.pl -ud -a -m -nd > /dev/null"
+echo "# Update NetDB MAC and ARP table data" >> /etc/crontab
+echo "*/15 * * * * netdb /opt/netdb/netdbctl.pl -ud -a -m -nd > /dev/null" >> /etc/crontab
 echo "" >> /etc/crontab
-echo "# Update static address flag from DHCP, relies on file to be up to date"
-echo "35 * * * * netdb /opt/netdb/netdbctl.pl -s  > /dev/null"
+echo "# Update static address flag from DHCP, relies on file to be up to date" >> /etc/crontab
+echo "35 * * * * netdb /opt/netdb/netdbctl.pl -s  > /dev/null" >> /etc/crontab
 echo "" >> /etc/crontab
-echo "# Force DNS updates on all current ARP entries once a day"
-echo "5 13 * * * netdb /opt/netdb/netdbctl.pl -f > /dev/null"
+echo "# Force DNS updates on all current ARP entries once a day" >> /etc/crontab
+echo "5 13 * * * netdb /opt/netdb/netdbctl.pl -f > /dev/null" >> /etc/crontab
 echo "" >> /etc/crontab
-echo "# Cleanup netdb's SSH known_host file automatically (uncomment)"
-echo "00 5 * * * root rm -rf /home/netdb/.ssh/known_hosts 2> /dev/null"
-
+echo "# Cleanup netdb's SSH known_host file automatically (uncomment)" >> /etc/crontab
+echo "00 5 * * * root rm -rf /home/netdb/.ssh/known_hosts 2> /dev/null" >> /etc/crontab
+echo "" >> /etc/crontab
+echo "# Update statistics for graphs if enabled, run before MRTG" >> /etc/crontab
+echo "*/5 * * * * netdb /opt/netdb/extra/update-statistics.sh > /dev/null" >> /etc/crontab
+echo "" >> /etc/crontab
+echo "# Update MAC Vendor Database from IEEE monthly" >> /etc/crontab
+echo "00 5 15 * * root wget http://standards-oui.ieee.org/oui/oui.txt -O /opt/netdb/data/oui.txt" >> /etc/crontab
+echo "" >> /etc/crontab
+echo "#### End Cron Jobs #####" >> /etc/crontab
 
 # Make Control log available from the Web UI
 ln -s /var/log/netdb/control.log /var/www/html/netdb/control.log
@@ -252,5 +259,8 @@ echo "Point your browser to https://$IP_ADDR to access the web UI"
 
 #TODO update OUI link in crontab
 #TODO [Fix] (https://sourceforge.net/p/netdbtracking/discussion/939988/thread/77fbf56a/)
+
+# Fix Apache error AH00558
+echo "ServerName  localhost" >> /etc/httpd/conf/httpd.conf
 
 
