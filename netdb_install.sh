@@ -31,7 +31,7 @@ yum install -y gcc unzip make bzip2 curl lynx ftp patch mariadb mariadb-server h
 perl-List-MoreUtils perl-DBI perl-Net-DNS perl-Math-Round perl-Module-Implementation \
 perl-Params-Validate perl-DateTime-Locale perl-DateTime-TimeZone perl-DateTime \
 perl-DateTime-Format-MySQL perl-Time-HiRes perl-Digest-HMAC perl-Digest-SHA1 \
-perl-Net-IP perl-AppConfig perl-Proc-Queue perl-Proc-ProcessTable perl-NetAddr-IP perl-IO-Socket-IP \
+perl-Net-IP perl-AppConfig perl-Proc-Queue perl-Proc-ProcessTable perl-NetAddr-IP perl-IO-Socket-IP wget \
 perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN expect mod_ssl git expect
 
 # Install remaining perl modules use '-f' to force the installtion of File::Flock
