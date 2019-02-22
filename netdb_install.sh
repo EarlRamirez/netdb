@@ -120,6 +120,7 @@ cp /opt/netdb/netdb.cgi.pl /var/www/cgi-bin/netdb.pl
 mv /etc/mrtg/mrtg.cfg /etc/mrtg/mrtg.cfg.bkp
 cp /opt/netdb/extra/mrtg.cfg /etc/mrtg/mrtg.cfg
 cp -r /opt/netdb/extra/mrtg /var/www/html/netdb/
+cp /opt/netdb/extra/mrtg /etc/cron.d/mrtg
 rm -rf /var/www/mrtg
 indexmaker --title="NetDB Graphs" --show=week /opt/netdb/extra/mrtg.cfg > /var/www/html/netdb/mrtg/index.html
 
@@ -259,6 +260,9 @@ echo "Point your browser to https://$IP_ADDR to access the web UI"
 
 #TODO update OUI link in crontab
 #TODO [Fix] (https://sourceforge.net/p/netdbtracking/discussion/939988/thread/77fbf56a/)
+
+# Fix MRTG SELinux error
+chcon -R -t mrtg_etc_t /etc/mrtg
 
 # Fix Apache error AH00558
 echo "ServerName  localhost" >> /etc/httpd/conf/httpd.conf
