@@ -120,7 +120,7 @@ cp /opt/netdb/netdb.cgi.pl /var/www/cgi-bin/netdb.pl
 mv /etc/mrtg/mrtg.cfg /etc/mrtg/mrtg.cfg.bkp
 cp /opt/netdb/extra/mrtg.cfg /etc/mrtg/mrtg.cfg
 cp -r /opt/netdb/extra/mrtg /var/www/html/netdb/
-cp /opt/netdb/extra/mrtg /etc/cron.d/mrtg
+cp /opt/netdb/extra/mrtg_cron /etc/cron.d/mrtg
 rm -rf /var/www/mrtg
 indexmaker --title="NetDB Graphs" --show=week /opt/netdb/extra/mrtg.cfg > /var/www/html/netdb/mrtg/index.html
 
@@ -254,7 +254,7 @@ echo "Permitting port and 443"
 firewall-cmd --permanent --add-service=https && firewall-cmd --reload
 
 # Add hostname to /etc/hosts
-echo  $IP_ADDR	$hostname >> /etc/hosts
+echo  "$IP_ADDR	$hostname" >> /etc/hosts
 
 echo "Point your browser to https://$IP_ADDR to access the web UI"
 
