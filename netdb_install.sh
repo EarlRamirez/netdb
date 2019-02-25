@@ -102,6 +102,9 @@ mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT SELECT,INSE
 
 #TODO Update /etc/netdb.conf with credentials
 
+    sed -i 's,^\(dbpass = \).*,\1'$MYSQL_USER_RW',' "/etc/netdb.conf"
+    sed -i 's,^\(dbpassRO = \).*,\1'$MYSQL_USER_RO',' "/etc/netdb.conf"
+
 # Add netdb perl modules
 mkdir /usr/lib64/perl5/Net/
 ln -s /opt/netdb/NetDBHelper.pm /usr/lib64/perl5/NetDBHelper.pm
@@ -221,13 +224,13 @@ echo "# NetDB Cron Jobs						 " >> /etc/crontab
 echo "#######################################" >> /etc/crontab
 echo "" >> /etc/crontab
 echo "# Update NetDB MAC and ARP table data" >> /etc/crontab
-echo "*/15 * * * * netdb /opt/netdb/netdbctl.pl -ud -a -m -nd > /dev/null" >> /etc/crontab
+echo "*/15 * * * * root /opt/netdb/netdbctl.pl -ud -a -m -nd > /dev/null" >> /etc/crontab
 echo "" >> /etc/crontab
 echo "# Update static address flag from DHCP, relies on file to be up to date" >> /etc/crontab
-echo "35 * * * * netdb /opt/netdb/netdbctl.pl -s  > /dev/null" >> /etc/crontab
+echo "35 * * * * root /opt/netdb/netdbctl.pl -s  > /dev/null" >> /etc/crontab
 echo "" >> /etc/crontab
 echo "# Force DNS updates on all current ARP entries once a day" >> /etc/crontab
-echo "5 13 * * * netdb /opt/netdb/netdbctl.pl -f > /dev/null" >> /etc/crontab
+echo "5 13 * * * root /opt/netdb/netdbctl.pl -f > /dev/null" >> /etc/crontab
 echo "" >> /etc/crontab
 echo "# Cleanup netdb's SSH known_host file automatically (uncomment)" >> /etc/crontab
 echo "00 5 * * * root rm -rf /home/netdb/.ssh/known_hosts 2> /dev/null" >> /etc/crontab
@@ -236,7 +239,7 @@ echo "# Update statistics for graphs if enabled, run before MRTG" >> /etc/cronta
 echo "*/5 * * * * netdb /opt/netdb/extra/update-statistics.sh > /dev/null" >> /etc/crontab
 echo "" >> /etc/crontab
 echo "# Update MAC Vendor Database from IEEE monthly" >> /etc/crontab
-echo "00 5 15 * * root wget http://standards-oui.ieee.org/oui/oui.txt -O /opt/netdb/data/oui.txt" >> /etc/crontab
+echo "00 5 15 * * netdb wget http://standards-oui.ieee.org/oui/oui.txt -O /opt/netdb/data/oui.txt" >> /etc/crontab
 echo "" >> /etc/crontab
 echo "#### End Cron Jobs #####" >> /etc/crontab
 
