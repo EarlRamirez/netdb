@@ -102,7 +102,7 @@ mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT SELECT,INSE
 
 #TODO Update /etc/netdb.conf with credentials
 
-    sed -i 's,^\(dbpass = \).*,\1'$MYSQL_USER_RW',' "/etc/netdb.conf"
+    sed -i 's,^\(dbpass   = \).*,\1'$MYSQL_USER_RW',' "/etc/netdb.conf"
     sed -i 's,^\(dbpassRO = \).*,\1'$MYSQL_USER_RO',' "/etc/netdb.conf"
 
 # Add netdb perl modules
