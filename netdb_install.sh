@@ -223,16 +223,16 @@ echo "# NetDB Cron Jobs						 " >> /etc/crontab
 echo "#######################################" >> /etc/crontab
 echo "" >> /etc/crontab
 echo "# Update NetDB MAC and ARP table data" >> /etc/crontab
-echo "*/15 * * * * root /opt/netdb/netdbctl.pl -ud -a -m -nd > /dev/null" >> /etc/crontab
+echo "*/15 * * * * netdb /opt/netdb/netdbctl.pl -ud -a -m -nd > /dev/null" >> /etc/crontab
 echo "" >> /etc/crontab
 echo "# Update static address flag from DHCP, relies on file to be up to date" >> /etc/crontab
-echo "35 * * * * root /opt/netdb/netdbctl.pl -s  > /dev/null" >> /etc/crontab
+echo "35 * * * * netdb /opt/netdb/netdbctl.pl -s  > /dev/null" >> /etc/crontab
 echo "" >> /etc/crontab
 echo "# Force DNS updates on all current ARP entries once a day" >> /etc/crontab
-echo "5 13 * * * root /opt/netdb/netdbctl.pl -f > /dev/null" >> /etc/crontab
+echo "5 13 * * * netdb /opt/netdb/netdbctl.pl -f > /dev/null" >> /etc/crontab
 echo "" >> /etc/crontab
 echo "# Cleanup netdb's SSH known_host file automatically (uncomment)" >> /etc/crontab
-echo "00 5 * * * root rm -rf /home/netdb/.ssh/known_hosts 2> /dev/null" >> /etc/crontab
+echo "00 5 * * * netdb rm -rf /home/netdb/.ssh/known_hosts 2> /dev/null" >> /etc/crontab
 echo "" >> /etc/crontab
 echo "# Update statistics for graphs if enabled, run before MRTG" >> /etc/crontab
 echo "*/5 * * * * netdb /opt/netdb/extra/update-statistics.sh > /dev/null" >> /etc/crontab
@@ -253,14 +253,17 @@ restorecon -Rv /var/www/html
 # Fix Apache error AH00558
 echo "ServerName  localhost" >> /etc/httpd/conf/httpd.conf
 
-systemctl enable httpd && systemctl start httpd
-
-# Create firewall rule
-echo "Permitting port and 443"
+# Start httpd and create firewall rule
+echo "Starting httpd and permitting port and 443"
 firewall-cmd --permanent --add-service=https && firewall-cmd --reload
+systemctl enable httpd && systemctl start httpd
 
 # Add hostname to /etc/hosts
 echo  "$IP_ADDR	$HOSTNAME" >> /etc/hosts
+
+# Creat Lock directory
+mkdir -pv /var/lock/netdb
+chown -R netdb.netdb /var/lock/netdb
 
 echo "Point your browser to https://$IP_ADDR to access the web UI"
 
