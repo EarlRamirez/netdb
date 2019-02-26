@@ -100,10 +100,6 @@ mysql -u root --password=$MYSQL_ROOT_PASS netdb < /opt/netdb/createnetdb.sql
 mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT ALL PRIVILEGES ON netdb.* TO netdbadmin@localhost IDENTIFIED BY '$MYSQL_USER_RW';"
 mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT SELECT,INSERT,UPDATE,LOCK TABLES,SHOW VIEW,DELETE ON netdb.* TO 'netdbuser'@'localhost' IDENTIFIED BY '$MYSQL_USER_RO';"
 
-#TODO Update /etc/netdb.conf with credentials
-sed -i 's,^\(dbpass   = \).*,\1'$MYSQL_USER_RW',' "/etc/netdb.conf"
-sed -i 's,^\(dbpassRO = \).*,\1'$MYSQL_USER_RO',' "/etc/netdb.conf"
-
 # Add netdb perl modules
 mkdir /usr/lib64/perl5/Net/
 ln -s /opt/netdb/NetDBHelper.pm /usr/lib64/perl5/NetDBHelper.pm
@@ -117,6 +113,10 @@ cp /opt/netdb/netdb-cgi.conf /etc/
 touch /var/www/html/netdb/netdbReport.csv
 cp -r /opt/netdb/extra/depends /var/www/html/netdb/
 cp /opt/netdb/netdb.cgi.pl /var/www/cgi-bin/netdb.pl
+
+#TODO Update /etc/netdb.conf with credentials
+sed -i 's,^\(dbpass   = \).*,\1'$MYSQL_USER_RW',' "/etc/netdb.conf"
+sed -i 's,^\(dbpassRO = \).*,\1'$MYSQL_USER_RO',' "/etc/netdb.conf"
 
 #TODO Configure MRTG virtual host, update alias path and trusted network
 mv /etc/mrtg/mrtg.cfg /etc/mrtg/mrtg.cfg.bkp
