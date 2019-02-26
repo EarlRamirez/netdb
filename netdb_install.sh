@@ -260,7 +260,7 @@ echo "Permitting port and 443"
 firewall-cmd --permanent --add-service=https && firewall-cmd --reload
 
 # Add hostname to /etc/hosts
-echo  "$IP_ADDR	$hostname" >> /etc/hosts
+echo  "$IP_ADDR	$HOSTNAME" >> /etc/hosts
 
 echo "Point your browser to https://$IP_ADDR to access the web UI"
 
