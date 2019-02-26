@@ -101,9 +101,8 @@ mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT ALL PRIVILE
 mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT SELECT,INSERT,UPDATE,LOCK TABLES,SHOW VIEW,DELETE ON netdb.* TO 'netdbuser'@'localhost' IDENTIFIED BY '$MYSQL_USER_RO';"
 
 #TODO Update /etc/netdb.conf with credentials
-
-    sed -i 's,^\(dbpass   = \).*,\1'$MYSQL_USER_RW',' "/etc/netdb.conf"
-    sed -i 's,^\(dbpassRO = \).*,\1'$MYSQL_USER_RO',' "/etc/netdb.conf"
+sed -i 's,^\(dbpass   = \).*,\1'$MYSQL_USER_RW',' "/etc/netdb.conf"
+sed -i 's,^\(dbpassRO = \).*,\1'$MYSQL_USER_RO',' "/etc/netdb.conf"
 
 # Add netdb perl modules
 mkdir /usr/lib64/perl5/Net/
@@ -126,10 +125,10 @@ cp -r /opt/netdb/extra/mrtg /var/www/html/netdb/
 cp /opt/netdb/extra/mrtg_cron /etc/cron.d/mrtg
 rm -rf /var/www/mrtg
 indexmaker --title="NetDB Graphs" --show=week /opt/netdb/extra/mrtg.cfg > /var/www/html/netdb/mrtg/index.html
-
+sed -i 's,Alias \/mrtg \/var\/www\/mrtg, Alias \/mrtg \/var\/www\/html\/netdb\/mrtg,g' /etc/httpd/conf.d/mrtg.conf
+sed -i 's,Require local,Require ip 10.0.0.0\/18 172.16.0.0\/16 192.168.0.0\/16,g' /etc/httpd/conf.d/mrtg.conf
 
 # Create netdb web UI credentials
-#TODO replace with DB credentials
 touch /var/www/html/netdb/netdb.passwd
 echo "Enter your netdb web UI password"
 htpasswd -c -B /var/www/html/netdb/netdb.passwd netdb
@@ -250,6 +249,10 @@ ln -s /var/log/netdb/control.log /var/www/html/netdb/control.log
 echo "Updating NetDB document root permissions"
 chown -R apache:apache /var/www/html/netdb
 restorecon -Rv /var/www/html
+
+# Fix Apache error AH00558
+echo "ServerName  localhost" >> /etc/httpd/conf/httpd.conf
+
 systemctl enable httpd && systemctl start httpd
 
 # Create firewall rule
@@ -264,10 +267,7 @@ echo "Point your browser to https://$IP_ADDR to access the web UI"
 #TODO update OUI link in crontab
 #TODO [Fix] (https://sourceforge.net/p/netdbtracking/discussion/939988/thread/77fbf56a/)
 
-# Fix MRTG SELinux error
+# Fix MRTG SELinux error 
+#TODO fix does not work, additional resarch required
 chcon -R -t mrtg_etc_t /etc/mrtg
-
-# Fix Apache error AH00558
-echo "ServerName  localhost" >> /etc/httpd/conf/httpd.conf
-
 
