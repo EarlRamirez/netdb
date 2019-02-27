@@ -34,6 +34,9 @@ perl-DateTime-Format-MySQL perl-Time-HiRes perl-Digest-HMAC perl-Digest-SHA1 \
 perl-Net-IP perl-AppConfig perl-Proc-Queue perl-Proc-ProcessTable perl-NetAddr-IP perl-IO-Socket-IP wget \
 perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN expect mod_ssl git expect
 
+#TODO
+Create a function to kill the script if all a packages are not installed
+
 # Install remaining perl modules use '-f' to force the installtion of File::Flock
 echo "Installing NetDB Perl dependencies..."
 for mod in Attribute::Handlers Data::UUID Net::MAC::Vendor Net::SSH::Expect File::Flock ExtUtils::Constant
@@ -49,6 +52,8 @@ useradd netdb && usermod -aG wheel netdb
 #TODO have this process replaced by git clone <url> /opt/
 echo "Clonning git repository..."
 git clone https://github.com/EarlRamirez/netdb.git /opt/netdb
+
+#TODO Create a function if git clone fails
 chown -R netdb.netdb /opt/netdb
 mkdir -pv /var/log/netdb
 chown -R netdb.apache /var/log/netdb
@@ -101,6 +106,7 @@ mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT ALL PRIVILE
 mysql -u root --password=$MYSQL_ROOT_PASS --execute="use netdb;GRANT SELECT,INSERT,UPDATE,LOCK TABLES,SHOW VIEW,DELETE ON netdb.* TO 'netdbuser'@'localhost' IDENTIFIED BY '$MYSQL_USER_RO';"
 
 # Add netdb perl modules
+echo "Setting up NetDB directories and Symlinks"
 mkdir /usr/lib64/perl5/Net/
 ln -s /opt/netdb/NetDBHelper.pm /usr/lib64/perl5/NetDBHelper.pm
 ln -s /opt/netdb/NetDB.pm /usr/lib64/perl5/NetDB.pm
@@ -115,10 +121,12 @@ cp -r /opt/netdb/extra/depends /var/www/html/netdb/
 cp /opt/netdb/netdb.cgi.pl /var/www/cgi-bin/netdb.pl
 
 #TODO Update /etc/netdb.conf with credentials
+echo "NetDB credentials"
 sed -i 's,^\(dbpass   = \).*,\1'$MYSQL_USER_RW',' "/etc/netdb.conf"
 sed -i 's,^\(dbpassRO = \).*,\1'$MYSQL_USER_RO',' "/etc/netdb.conf"
 
 #TODO Configure MRTG virtual host, update alias path and trusted network
+echo "Configuring MRTG..."
 mv /etc/mrtg/mrtg.cfg /etc/mrtg/mrtg.cfg.bkp
 cp /opt/netdb/extra/mrtg.cfg /etc/mrtg/mrtg.cfg
 cp -r /opt/netdb/extra/mrtg /var/www/html/netdb/
@@ -174,6 +182,7 @@ echo ""
 
 
 #TODO Create virtual host and replace Apache with Nginx
+echo "Creating NetDB virtual host"
 set_vhost() {
 	netdb_vhost=/etc/httpd/conf.d/netdb.conf
 	{
@@ -217,7 +226,7 @@ set_vhost() {
 set_vhost
 
 #TODO Add crontab entries, don't forget you need to run it as root to get past the lockfile (temp fix)
-
+echo "Adding cron jobs"
 echo "#######################################" >> /etc/crontab
 echo "# NetDB Cron Jobs						 " >> /etc/crontab
 echo "#######################################" >> /etc/crontab
@@ -259,18 +268,26 @@ firewall-cmd --permanent --add-service=https && firewall-cmd --reload
 systemctl enable httpd && systemctl start httpd
 
 # Add hostname to /etc/hosts
+echo "Patching hosts file.."
 echo  "$IP_ADDR	$HOSTNAME" >> /etc/hosts
 
 # Creat Lock directory
+echo "Creating lock directory"
 mkdir -pv /var/lock/netdb
 chown -R netdb.netdb /var/lock/netdb
-
-echo "Point your browser to https://$IP_ADDR to access the web UI"
 
 #TODO update OUI link in crontab
 #TODO [Fix] (https://sourceforge.net/p/netdbtracking/discussion/939988/thread/77fbf56a/)
 
 # Fix MRTG SELinux error 
 #TODO fix does not work, additional resarch required
+echo "Modifying SELinux permissions"
 chcon -R -t mrtg_etc_t /etc/mrtg
-
+restorecon -Rv /etc/mrtg
+cp /opt/netdb/extra/my-mrtg* /tmp/
+semoule -i /tmp/my-mrtg.pp
+rm -rf /tmp/my-mrtg*
+echo ""
+echo "Script completed"
+echo ""
+echo "Point your browser to https://$IP_ADDR to access the web UI"
