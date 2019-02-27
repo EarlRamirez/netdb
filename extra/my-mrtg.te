@@ -1,0 +1,15 @@
+
+module my-mrtg 1.0;
+
+require {
+	type mrtg_t;
+	type mrtg_etc_t;
+	class capability dac_override;
+	class dir { add_name remove_name write };
+	class file { create link unlink write };
+}
+
+#============= mrtg_t ==============
+allow mrtg_t mrtg_etc_t:dir { add_name remove_name write };
+allow mrtg_t mrtg_etc_t:file { create link unlink write };
+allow mrtg_t self:capability dac_override;
