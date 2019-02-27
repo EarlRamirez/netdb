@@ -1,9 +1,0 @@
-/var/log/netdb/netdb.error /var/log/netdb/control.log   {
-        weekly
-        missingok
-        rotate 12
-        compress
-        delaycompress
-        notifempty
-        create 640 netdb www-data
-}
