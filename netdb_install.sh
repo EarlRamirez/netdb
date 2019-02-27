@@ -284,7 +284,7 @@ chown -R netdb.netdb /var/lock/netdb
 echo "Modifying SELinux permissions"
 chcon -R -t mrtg_etc_t /etc/mrtg
 restorecon -Rv /etc/mrtg
-semoule -i /opt/netdb/extra/my-mrtg.pp
+semodule -i /opt/netdb/extra/my-mrtg.pp
 
 echo ""
 echo "Script completed"
