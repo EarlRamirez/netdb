@@ -32,6 +32,7 @@ If there isn't any DNS for your devices, its recommended that you update your ho
 
 - Using your favourite editor update the hosts file, `vim /etc/hosts`
 	> 10.0.0.1		device1
+
 	> 10.0.0.2		device2
 
 ##### Configure Devices to be Scraped
@@ -40,6 +41,7 @@ NetDB will only scarp the devices that are in the devicelist.csv which is locate
 
 - Add devices to the devicelist.csv
 	>device1,arp,vrf-one,vrf-two
+
  	>device2,arp
 
 ##### Updating NetDB Configuration File
@@ -48,7 +50,8 @@ The final step is to update the netdb.conf with the credentials of your networki
 
 - Edit the confoguration file `vim /etc/netdb.conf` and update the following lines
 	>devuser    = **your_switch_user**       # Level 5 cisco user (show commands only)
-	 devpass    = **your_passwd**
+
+	>devpass    = **your_passwd**
 
 -----------
 ### Validate the Installation
