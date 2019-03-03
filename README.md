@@ -52,8 +52,8 @@ The final step is to update the netdb.conf with the credentials of your networki
 
 - Edit the confoguration file `vim /etc/netdb.conf` and update the following lines
 	```shell	
-	devuser    = **your_switch_user**       # Level 5 cisco user (show commands only)
-	devpass    = **your_passwd**
+	devuser    = your_switch_user       # Level 5 cisco user (show commands only)
+	devpass    = your_passwd
 	```
 
 -----------
