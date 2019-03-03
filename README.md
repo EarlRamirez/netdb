@@ -3,6 +3,7 @@
 
 [NetDB](http://netdbtracking.sourceforge.net/) Network tracking database (NetDB) utilises the LAMP (Linux, Apache, MariaDB and Perl) stack for scraping and storing your network infomration in a centralised location.
 
+.. image:: extra/img/netdb_main.png
 
 -----------
 ### Credit
