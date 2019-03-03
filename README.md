@@ -12,61 +12,56 @@ All credit goes to Jonathan Yantis.
 ------------
 ### Installation
 
-The installations script is geared toward a vanilla installation of your favourite Red Hat based distro; however, if you are going to install NetDB on an existing server that has the LAMP stack or just want do it manually follow the below steps.
+To install NetDB on a vanilla Red Hat based distribution run the following commands
 
-- Install epel repo and update the OS
+- Clone the NetDB `git clone https://github.com/EarlRamirez/netdb.git`
+- Run the installation script `sudo sh <path_to_netdb>/netdb_install.sh`
+- Enter the database passwords
 
-   >yum install -y epel-release && yum -y update
-
-- Install the necessary packages
-
-   >yum install -y gcc unzip make bzip2 curl lynx ftp patch mariadb mariadb-server httpd httpd-tools perl mrtg perl-List-MoreUtils perl-DBI perl-Net-DNS perl-Math-Round perl-Module-Implementation perl-Params-Validate perl-DateTime-Locale perl-DateTime-TimeZone perl-DateTime perl-DateTime-Format-MySQL perl-Time-HiRes perl-Digest-HMAC perl-Digest-SHA1 perl-Net-IP perl-AppConfig perl-Proc-Queue perl-Proc-ProcessTable perl-NetAddr-IP perl-IO-Socket-IP perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN expect mod_ssl git expect wget
-
-- Install Perl modules that is required for NetDB
-
-   >cpan Attribute::Handlers   
-       cpan Data::UUID   
-       cpan Net::MAC::Vendor   
-       cpan Net::SSH::Expect   
-       cpan-f File::Flock   
-       cpan ExtUtils::Constant
-
-- Create NetDB user 
-
-   >useradd netdb && usermod -aG wheel netdb
-
-- Clone NetDB repository to /opt/netdb
-
-   >git clone https://github.com/EarlRamirez/netdb.git /opt/netdb
-
-- Change the directory ownership and create the necessary directories
-
-   >chown -R netdb.netdb /opt/netdb   
-       mkdir -pv /var/log/netdb   
-       chown -R netdb.apache /var/log/netdb
-
-- Create Symbolic NetDB symbolic link
-
-   >ln -s /opt/netdb/netdb.pl /usr/local/bin/netdb   
-       ln -s /opt/netdb/netdbctl.pl /usr/local/bin/netdbctl
-
-- Copy control log rotation script
-
-   >cp /opt/netdb/extra/netdb-logrotate /etc/logrotate.d/
-
-- Configure MariaDB
-
-   >systemctl enable mariadb && systemctl start mariadb  
-   >mysql_secure_installation  
-   >mysql -u root -p (Login to MariaDB/MySQL)  
-          CREATE DATABASE netdb;  
-	      use netdb;   
-	      source /opt/netdb/createdb.sql;  
+When the installation script is completed, point your browser to the IP address of the server.
 		  
-
 
 ----------
 ### Configuring and Adding Devices
 
+There are a few things that was not done by the installation script; therefore, a few modifications are required for NetDB to start scraping your networking equipment, for example, Cisco switches and routers.
+
+##### Add Devices to the Hosts File
+
+If there isn't any DNS for your devices, its recommended that you update your hosts file with the IP and the host name of your devices 
+
+- Using your favourite editor update the hosts file, `vim /etc/hosts`
+	> 10.0.0.1		device1
+	> 10.0.0.2		device2
+
+##### Configure Devices to be Scraped
+
+NetDB will only scarp the devices that are in the devicelist.csv which is located in _/opt/netdb/data/devicelist.csv_. The devicelist.csv supports both ARP and VRF, for example, device1 supports has VRF and device1 does not the configuration file will look like this 
+
+- Add devices to the devicelist.csv
+	>device1,arp,vrf-one,vrf-two
+ 	>device2,arp
+
+##### Updating NetDB Configuration File
+
+The final step is to update the netdb.conf with the credentials of your networking devices
+
+- Edit the confoguration file `vim /etc/netdb.conf` and update the following lines
+	>devuser    = **your_switch_user**       # Level 5 cisco user (show commands only)
+	 devpass    = **your_passwd**
+
 -----------
-### Troubleshotting
+### Validate the Installation
+
+- Try to scrape devices for data for the first time, add a -debug value if there
+  are problems
+  >netdbctl -ud -v
+
+- Import data in to database (run this twice the first time)
+  >netdbctl -a -m -debug 3
+
+- Check control.log for any errors `tail -f /var/log/netdb/control.log`
+
+- Check the size of the data in the database
+   netdb -st
+
