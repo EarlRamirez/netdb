@@ -3,7 +3,6 @@
 
 [NetDB](http://netdbtracking.sourceforge.net/) Network tracking database (NetDB) utilises the LAMP (Linux, Apache, MariaDB and Perl) stack for scraping and storing your network infomration in a centralised location.
 
-
 -----------
 ### Credit
 
@@ -19,6 +18,16 @@ To install NetDB on a vanilla Red Hat based distribution run the following comma
 - Enter the database passwords
 
 When the installation script is completed, point your browser to the IP address of the server.
+
+##### Screenshots
+
+- NetDB main page
+
+![alt text](https://raw.githubusercontent.com/EarlRamirez/netdb/dev/extra/img/netdb_main.png)
+
+- NetDB Results
+
+
 
 ----------
 ### Configuring and Adding Devices
