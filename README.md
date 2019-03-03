@@ -19,7 +19,6 @@ To install NetDB on a vanilla Red Hat based distribution run the following comma
 - Enter the database passwords
 
 When the installation script is completed, point your browser to the IP address of the server.
-		  
 
 ----------
 ### Configuring and Adding Devices
@@ -40,7 +39,7 @@ If there isn't any DNS for your devices, its recommended that you update your ho
 
 NetDB will only scarp the devices that are in the devicelist.csv which is located in _/opt/netdb/data/devicelist.csv_. The devicelist.csv supports both ARP and VRF, for example, device1 supports has VRF and device1 does not the configuration file will look like this 
 
-- Add devices to the devicelist.csv
+- Add devices to the devicelist.csv `vim /opt/netdb/data/devicelist.csv`
 	```shell	
 	device1,arp,vrf-one,vrf-two
 	device2,arp
@@ -52,7 +51,7 @@ The final step is to update the netdb.conf with the credentials of your networki
 
 - Edit the confoguration file `vim /etc/netdb.conf` and update the following lines
 	```shell	
-	devuser    = your_switch_user       # Level 5 cisco user (show commands only)
+	devuser    = your_switch_user  # Level 5 cisco user (show commands only)
 	devpass    = your_passwd
 	```
 
@@ -61,13 +60,45 @@ The final step is to update the netdb.conf with the credentials of your networki
 
 - Try to scrape devices for data for the first time, add a -debug value if there
   are problems
-  >netdbctl -ud -v
+	```shell
+	netdbctl -ud -v
+	```
 
 - Import data in to database (run this twice the first time)
-  >netdbctl -a -m -debug 3
+	```shell
+	netdbctl -a -m -debug 3
+	```
 
 - Check control.log for any errors `tail -f /var/log/netdb/control.log`
 
 - Check the size of the data in the database
-   netdb -st
+	```shell
+	netdb -st
+	```
+
+----------
+### Troubleshooting
+
+- If it's running extremely slow when you do an ARP import in to the database, you likely have a reverse DNS issue on
+  your network.  Make sure your DNS servers are properly configured or try a local caching BIND server.  You can also
+  disable DNS lookups with disable_DNS, see the netdb.conf file for ideas on how to use this.
+
+- If you are having issues with data showing up in the database, first start by turning debugging on in /etc/netdb.conf
+  to level 3
+
+- Check to see if the MAC or ARP data is getting in to the data files arptable.txt and mactable.txt files by grepping
+  for some device data in /opt/netdb/data/.
+
+- If you are not getting ARP data, make sure you append the devicelist.csv file entry with: device.domain.com,netdbarp
+
+- If data is not getting populated, you have a scraper problem.  Run netdbctl with the -v or -vv option to debug any 
+  scraper issues.
+
+- If the data is in the files, check the database: mysql -u netdb -p -h localhost
+	```shell
+	use netdb;
+	select * from switchports;
+	select * from ipmac;
+	```
+- For further assistance you can create an [Issue in Github](https://github.com/EarlRamirez/netdb/issues)
 
