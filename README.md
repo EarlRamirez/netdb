@@ -40,9 +40,10 @@ If there isn't any DNS for your devices, its recommended that you update your ho
 NetDB will only scarp the devices that are in the devicelist.csv which is located in _/opt/netdb/data/devicelist.csv_. The devicelist.csv supports both ARP and VRF, for example, device1 supports has VRF and device1 does not the configuration file will look like this 
 
 - Add devices to the devicelist.csv
-	>device1,arp,vrf-one,vrf-two
-
- 	>device2,arp
+	```shell	
+	device1,arp,vrf-one,vrf-two
+	device2,arp
+	```
 
 ##### Updating NetDB Configuration File
 
