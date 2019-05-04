@@ -58,14 +58,11 @@ RUN git clone https://github.com/EarlRamirez/netdb.git /opt/netdb
 
 RUN chown -R netdb.netdb /opt/netdb && \
 mkdir -pv /var/log/netdb && \
-chown -R netdb.apache /var/log/netdb
-
-RUN ln -s /opt/netdb/netdb.pl /usr/local/bin/netdb && \
-ln -s /opt/netdb/netdbctl.pl /usr/local/bin/netdbctl
-
-RUN cp /opt/netdb/extra/netdb-logrotate /etc/logrotate.d/
-
-RUN mkdir /usr/lib64/perl5/Net/ && \
+chown -R netdb.apache /var/log/netdb && \
+ln -s /opt/netdb/netdb.pl /usr/local/bin/netdb && \
+ln -s /opt/netdb/netdbctl.pl /usr/local/bin/netdbctl && \
+cp /opt/netdb/extra/netdb-logrotate /etc/logrotate.d/ && \
+mkdir /usr/lib64/perl5/Net/ && \
 ln -s /opt/netdb/NetDBHelper.pm /usr/lib64/perl5/NetDBHelper.pm && \
 ln -s /opt/netdb/NetDB.pm /usr/lib64/perl5/NetDB.pm
 
@@ -75,16 +72,22 @@ mkdir -pv /var/www/html/netdb && \
 cp /opt/netdb/netdb-cgi.conf /etc/ && \
 touch /var/www/html/netdb/netdbReport.csv && \
 cp -r /opt/netdb/extra/depends /var/www/html/netdb/ && \
-cp /opt/netdb/netdb.cgi.pl /var/www/cgi-bin/netdb.pl
-
-RUN mkdir -pv /var/lock/netdb && \
-chown -R netdb.netdb /var/lock/netdb
+cp /opt/netdb/netdb.cgi.pl /var/www/cgi-bin/netdb.pl &&\ 
+mkdir -pv /var/lock/netdb && \
+chown -R netdb.netdb /var/lock/netdb && \
+echo "ServerName localhost" >> /etc/httpd/conf/httpd.conf && \
+rm -rf /usr/share/backgrounds 
 
 COPY netdb.conf /etc/httpd/conf.d/netdb.conf
 COPY netdb_crontab /etc/cron.d/
+COPY netdb.passwd /var/www/html/netdb/
 
-EXPOSE 443
+ADD entrypoint.sh /entrypoint.sh
+RUN chmod -v +x /entrypoint.sh
 
-CMD ["/sbin/crond", "-f"]
 
-ENTRYPOINT /bin/bash
+#ENTRYPOINT entrypoint.sh
+
+CMD ["/entrypoint.sh"]
+
+EXPOSE 80
