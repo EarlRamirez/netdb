@@ -52,9 +52,6 @@ useradd netdb && usermod -aG wheel netdb
 echo "Clonning git repository..."
 git clone https://github.com/EarlRamirez/netdb.git /opt/netdb
 
-# Install local RPMs
-yum -y localinstall /opt/netdb/extra/perl-*.rpm
-rm -rf /opt/netdb/extra/perl-*.rpm
 
 #TODO Create a function if git clone fails
 chown -R netdb.netdb /opt/netdb
