@@ -1,7 +1,7 @@
 FROM centos:7
 MAINTAINER Earl Ramirez <earlaramirez@gmail.com>
 
-RUN yum -y install epel-release
+RUN yum -y install epel-release && yum clean all
 RUN yum -y --setop=tsflags=nodocs update && \
 yum -y --setop=tsflags=nodocs install gcc \
 --setop=tsflags=nodocs unzip \
