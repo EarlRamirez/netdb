@@ -34,18 +34,17 @@ perl-DateTime-Format-MySQL perl-Time-HiRes perl-Digest-HMAC perl-Digest-SHA1 per
 perl-Net-IP perl-AppConfig perl-Proc-Queue perl-Proc-ProcessTable perl-NetAddr-IP perl-IO-Socket-IP wget \
 perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN expect mod_ssl git expect 
 
-#TODO
-Create a function to kill the script if all a packages are not installed
+#TODO Create a function to kill the script if all a packages are not installed
 
 # Install remaining perl modules use '-f' to force the installtion of File::Flock
+# Need to convert this module to RPM and submit it to EPEL
 echo "Installing NetDB Perl dependencies..."
-cpan -f File::Flock 
+y|cpan -f File::Flock 
 
 # Create netdb user
 #TODO Have netdb function as a regular user
 echo "Creating netdb user..."
 useradd netdb && usermod -aG wheel netdb
-
 
 #TODO have this process replaced by git clone <url> /opt/
 echo "Clonning git repository..."
@@ -67,10 +66,7 @@ ln -s /opt/netdb/netdbctl.pl /usr/local/bin/netdbctl
 # Copy netdb-logrotate script 
 cp /opt/netdb/extra/netdb-logrotate /etc/logrotate.d/
 
-#TODO Streamline MariaDB portion, users must be prompt to create their passwords
-#####################
-# Configure Mariadb #
-#####################
+# Configure MariaDB
 echo "Starting and configuring MariaDB..."
 systemctl enable mariadb && systemctl start mariadb
 
@@ -122,12 +118,12 @@ touch /var/www/html/netdb/netdbReport.csv
 cp -r /opt/netdb/extra/depends /var/www/html/netdb/
 cp /opt/netdb/netdb.cgi.pl /var/www/cgi-bin/netdb.pl
 
-#TODO Update /etc/netdb.conf with credentials
+# Add netdb credentials
 echo "NetDB credentials"
 sed -i 's,^\(dbpass   = \).*,\1'$MYSQL_USER_RW',' "/etc/netdb.conf"
 sed -i 's,^\(dbpassRO = \).*,\1'$MYSQL_USER_RO',' "/etc/netdb.conf"
 
-#TODO Configure MRTG virtual host, update alias path and trusted network
+# Configure MRTG
 echo "Configuring MRTG..."
 mv /etc/mrtg/mrtg.cfg /etc/mrtg/mrtg.cfg.bkp
 cp /opt/netdb/extra/mrtg.cfg /etc/mrtg/mrtg.cfg
@@ -146,8 +142,7 @@ htpasswd -c -B /var/www/html/netdb/netdb.passwd netdb
 # Create SSL Self-signed certificate
 echo "Creating self-signed SSL certificate...."
 GEN_CERT="openssl req -x509 -nodes -days 1095 -newkey rsa:2048 -keyout /etc/pki/tls/private/netdb-selfsigned.key -out /etc/pki/tls/certs/netdb-selfsigned.crt"
-
-# Automated configuration for securing MySQL/MariaDB		
+		
 echo "* Generate Self-Signed Certificate."
 GENERATE_CERT=$(expect -c "
 	set timeout 10
@@ -177,13 +172,12 @@ echo "Generate DH Parameters"
 openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
 echo ""
 
-# Append SSLOpenSSLConfCmd to the certificate
+# Append DH parameters to the certificate
 echo "Appening DH Parameters to Certificate"
 cat /etc/ssl/certs/dhparam.pem | sudo tee -a /etc/ssl/certs/netdb-selfsigned.crt
 echo ""
 
-
-#TODO Create virtual host and replace Apache with Nginx
+# Create virtual host
 echo "Creating NetDB virtual host"
 set_vhost() {
 	netdb_vhost=/etc/httpd/conf.d/netdb.conf
@@ -227,7 +221,7 @@ set_vhost() {
 
 set_vhost
 
-#TODO Add crontab entries, don't forget you need to run it as root to get past the lockfile (temp fix)
+#TODO Create a netdb cron and place it in /etc/cron.d/
 echo "Adding cron jobs"
 echo "#######################################" >> /etc/crontab
 echo "# NetDB Cron Jobs						 " >> /etc/crontab
@@ -278,11 +272,7 @@ echo "Creating lock directory"
 mkdir -pv /var/lock/netdb
 chown -R netdb.netdb /var/lock/netdb
 
-#TODO update OUI link in crontab
-#TODO [Fix] (https://sourceforge.net/p/netdbtracking/discussion/939988/thread/77fbf56a/)
-
 # Fix MRTG SELinux error 
-#TODO fix does not work, additional resarch required
 echo "Modifying SELinux permissions"
 chcon -R -t mrtg_etc_t /etc/mrtg
 restorecon -Rv /etc/mrtg
