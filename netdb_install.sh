@@ -36,10 +36,12 @@ perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-
 
 #TODO Create a function to kill the script if all a packages are not installed
 
-# Install remaining perl modules use '-f' to force the installtion of File::Flock
+# Install remaining perl modules use '-f' to force the installtion of File::Flock 
 # Need to convert this module to RPM and submit it to EPEL
 echo "Installing NetDB Perl dependencies..."
-y|cpan -f File::Flock 
+for mod in Net::MAC::Vendor Net::SSH::Expect Attribute::Handlers File::Flock ExtUtils::Constant
+do y|cpan -f File::Flock
+done
 
 # Create netdb user
 #TODO Have netdb function as a regular user
@@ -50,9 +52,6 @@ useradd netdb && usermod -aG wheel netdb
 echo "Clonning git repository..."
 git clone https://github.com/EarlRamirez/netdb.git /opt/netdb
 
-# Install local RPMs
-yum -y localinstall /opt/netdb/extra/perl-*.rpm
-rm -rf /opt/netdb/extra/perl-*.rpm
 
 #TODO Create a function if git clone fails
 chown -R netdb.netdb /opt/netdb
