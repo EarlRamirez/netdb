@@ -15,7 +15,7 @@
 #00 5    * * *   root    rm /home/netdb/.ssh/known_hosts 2> /dev/null
 #
 # Update statistics for graphs if enabled, run before MRTG
-#04,09,14,19,24,29,34,39,44,49,54,59 * * * *   netdb    /opt/netdb/extra/update-statistics.sh > /dev/null
+04,09,14,19,24,29,34,39,44,49,54,59 * * * *   netdb    /opt/netdb/extra/update-statistics.sh > /dev/null
 #
 # Update MAC Vendor Database from IEEE monthly
 00 5   15 * *   root   wget http://standards-oui.ieee.org/oui/oui.txt -O /opt/netdb/data/oui.txt
