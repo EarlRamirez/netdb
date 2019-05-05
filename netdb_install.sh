@@ -13,7 +13,8 @@ ORGANISATION_UNIT=NetworkTracking
 EMAIL=netdb@localdomain.com
 HOSTNAME="$(hostname)"
 FQDN="$(hostname --fqdn)"
-IP_ADDR="$(ip -o -4 addr show dev eth0 | sed 's/.* inet \([^/]*\).*/\1/')"
+NIC="$(ip route show | grep default | awk '{ print $5 }')"
+IP_ADDR="$(ip -o -4 addr show dev $NIC | sed 's/.* inet \([^/]*\).*/\1/')"
 MYSQL_ROOT=""
 echo "Enter your MariaDB new root password: "
 read -rs MYSQL_ROOT_PASS
