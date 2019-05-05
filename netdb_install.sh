@@ -40,7 +40,7 @@ perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-
 # Need to convert this module to RPM and submit it to EPEL
 echo "Installing NetDB Perl dependencies..."
 for mod in Net::MAC::Vendor Net::SSH::Expect Attribute::Handlers File::Flock ExtUtils::Constant
-do y|cpan -f File::Flock
+do y|cpan -f $mod
 done
 
 # Create netdb user
