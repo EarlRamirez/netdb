@@ -29,7 +29,7 @@ yum -y install epel-release
 echo "Installing NetDB Packages...."
 yum install -y gcc unzip make bzip2 curl lynx ftp patch mariadb mariadb-server httpd httpd-tools perl mrtg \
 perl-List-MoreUtils perl-DBI perl-Net-DNS perl-Math-Round perl-Module-Implementation perl-Data-UUID \
-perl-Params-Validate perl-DateTime-Locale perl-DateTime-TimeZone perl-DateTime \
+perl-Params-Validate perl-DateTime-Locale perl-DateTime-TimeZone perl-DateTime perl-JSON-PP \
 perl-DateTime-Format-MySQL perl-Time-HiRes perl-Digest-HMAC perl-Digest-SHA1 perl-Net-SSLeay \
 perl-Net-IP perl-AppConfig perl-Proc-Queue perl-Proc-ProcessTable perl-NetAddr-IP perl-IO-Socket-IP wget \
 perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN expect mod_ssl git expect
