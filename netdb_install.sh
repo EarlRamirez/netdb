@@ -28,7 +28,7 @@ yum -y install epel-release
 
 echo "Installing NetDB Packages...."
 yum install -y gcc unzip make bzip2 curl lynx ftp patch mariadb mariadb-server httpd httpd-tools perl mrtg \
-perl-List-MoreUtils perl-DBI perl-Net-DNS perl-Math-Round perl-Module-Implementation \
+perl-List-MoreUtils perl-DBI perl-Net-DNS perl-Math-Round perl-Module-Implementation perl-Data-UUID \
 perl-Params-Validate perl-DateTime-Locale perl-DateTime-TimeZone perl-DateTime \
 perl-DateTime-Format-MySQL perl-Time-HiRes perl-Digest-HMAC perl-Digest-SHA1 perl-Net-SSLeay \
 perl-Net-IP perl-AppConfig perl-Proc-Queue perl-Proc-ProcessTable perl-NetAddr-IP perl-IO-Socket-IP wget \
@@ -39,9 +39,7 @@ Create a function to kill the script if all a packages are not installed
 
 # Install remaining perl modules use '-f' to force the installtion of File::Flock
 echo "Installing NetDB Perl dependencies..."
-for mod in Attribute::Handlers Data::UUID Net::MAC::Vendor Net::SSH::Expect File::Flock ExtUtils::Constant
-do y|cpan -f $mod
-done;
+cpan -f File::Flock 
 
 # Create netdb user
 #TODO Have netdb function as a regular user
@@ -52,6 +50,10 @@ useradd netdb && usermod -aG wheel netdb
 #TODO have this process replaced by git clone <url> /opt/
 echo "Clonning git repository..."
 git clone https://github.com/EarlRamirez/netdb.git /opt/netdb
+
+# Install local RPMs
+yum -y localinstall /opt/netdb/extra/perl-*.rpm
+rm -rf /opt/netdb/extra/perl-*.rpm
 
 #TODO Create a function if git clone fails
 chown -R netdb.netdb /opt/netdb
