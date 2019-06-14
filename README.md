@@ -16,6 +16,7 @@ To install NetDB on a vanilla Red Hat based distribution run the following comma
 - Clone the NetDB `git clone https://github.com/EarlRamirez/netdb.git`
 - Run the installation script `sudo sh <path_to_netdb>/netdb_install.sh`
 - Enter the database passwords
+- Enter NetDB UI password
 
 When the installation script is completed, point your browser to the IP address of the server.
 
@@ -67,6 +68,8 @@ The final step is to update the netdb.conf with the credentials of your networki
 -----------
 ### Validate the Installation
 
+All commands below are executed as **netdb** 
+
 - Try to scrape devices for data for the first time, add a -debug value if there
   are problems
 	```shell
@@ -98,7 +101,12 @@ The final step is to update the netdb.conf with the credentials of your networki
 - Check to see if the MAC or ARP data is getting in to the data files arptable.txt and mactable.txt files by grepping
   for some device data in /opt/netdb/data/.
 
-- If you are not getting ARP data, make sure you append the devicelist.csv file entry with: device.domain.com,netdbarp
+- If you are not getting ARP data, make sure you append the devicelist.csv file entry as shown in the example below. Access switches usually has ARP only; however, distribution switches can have as many VRF that exists on the distribution switche.
+	```shell
+	switch1,arp
+	switch1,arp,vrf-one,vrf-two
+	switch1,arp,vrf-one,vrf-two
+	```
 
 - If data is not getting populated, you have a scraper problem.  Run netdbctl with the -v or -vv option to debug any 
   scraper issues.
