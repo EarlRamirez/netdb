@@ -84,7 +84,7 @@ ADD netdb.passwd /var/www/html/netdb/
 ADD entrypoint.sh /entrypoint.sh
 RUN chmod -v +x /entrypoint.sh
 
-#ENTRYPOINT entrypoint.sh
+ENTRYPOINT ["/usr/sbin/crond"]
 
 CMD ["/entrypoint.sh"]
 
