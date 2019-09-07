@@ -406,7 +406,7 @@ sub getARPTable {
         # Process one line at a time
         foreach my $line ( @output ) {
  
-                if ( $line =~ /(\w\w\:){5}|(\w\w\w\w\.\w\w\w\w\.\w\w\w\w)/ ) {
+                if ( $line =~ /(\w\w\:){5}|(\w\w\w\w\w\w\-\w\w\w\w\w\w)/ ) {
  
                         # Split apart results by whitespace
                         my @arp = split( /\s+/, $line );
