@@ -274,9 +274,6 @@ echo "Creating lock directory"
 mkdir -pv /var/lock/netdb
 chown -R netdb.netdb /var/lock/netdb
 
-#TODO update OUI link in crontab
-#TODO [Fix] (https://sourceforge.net/p/netdbtracking/discussion/939988/thread/77fbf56a/)
-
 # Create SELinux policy
 echo "Modifying SELinux permissions"
 chcon -R -t mrtg_etc_t /etc/mrtg
