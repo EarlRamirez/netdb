@@ -34,8 +34,7 @@ perl-DateTime-Format-MySQL perl-Time-HiRes perl-Digest-HMAC perl-Digest-SHA1 \
 perl-Net-IP perl-AppConfig perl-Proc-Queue perl-Proc-ProcessTable perl-NetAddr-IP perl-IO-Socket-IP wget \
 perl-IO-Socket-INET6 perl-ExtUtils-CBuilder perl-Socket perl-YAML perl-CGI perl-CPAN expect mod_ssl git expect
 
-#TODO
-Create a function to kill the script if all a packages are not installed
+#TODO Create a function to kill the script if all a packages are not installed
 
 # Install remaining perl modules use '-f' to force the installtion of File::Flock
 echo "Installing NetDB Perl dependencies..."
@@ -49,7 +48,7 @@ echo "Creating netdb user..."
 useradd netdb && usermod -aG wheel netdb
 
 
-#TODO have this process replaced by git clone <url> /opt/
+# Clone into /opt/ directory
 echo "Clonning git repository..."
 git clone https://github.com/EarlRamirez/netdb.git /opt/netdb
 
@@ -65,10 +64,7 @@ ln -s /opt/netdb/netdbctl.pl /usr/local/bin/netdbctl
 # Copy netdb-logrotate script 
 cp /opt/netdb/extra/netdb-logrotate /etc/logrotate.d/
 
-#TODO Streamline MariaDB portion, users must be prompt to create their passwords
-#####################
 # Configure Mariadb #
-#####################
 echo "Starting and configuring MariaDB..."
 systemctl enable mariadb && systemctl start mariadb
 
@@ -225,7 +221,7 @@ set_vhost() {
 
 set_vhost
 
-#TODO Add crontab entries, don't forget you need to run it as root to get past the lockfile (temp fix)
+# Add cron jobs
 echo "Adding cron jobs"
 echo "#######################################" >> /etc/crontab
 echo "# NetDB Cron Jobs						 " >> /etc/crontab
@@ -256,6 +252,8 @@ ln -s /var/log/netdb/control.log /var/www/html/netdb/control.log
 
 # Update document root permission and fire up the web server
 echo "Updating NetDB document root permissions"
+chown apache /var/www/cgi-bin/netdb.pl
+chmod u+x /var/www/cgi-bin/netdb.pl
 chown -R apache:apache /var/www/html/netdb
 restorecon -Rv /var/www/html
 
@@ -279,8 +277,7 @@ chown -R netdb.netdb /var/lock/netdb
 #TODO update OUI link in crontab
 #TODO [Fix] (https://sourceforge.net/p/netdbtracking/discussion/939988/thread/77fbf56a/)
 
-# Fix MRTG SELinux error 
-#TODO fix does not work, additional resarch required
+# Create SELinux policy
 echo "Modifying SELinux permissions"
 chcon -R -t mrtg_etc_t /etc/mrtg
 restorecon -Rv /etc/mrtg
