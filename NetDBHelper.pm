@@ -89,6 +89,7 @@ my $WHIRLEY_COUNT=-1;
 my $session_type;
 my $general_session;
 my $hostprompt;
+my $ssh_options;
 
 my ( $whirley, $myprompt );
 
@@ -396,6 +397,11 @@ sub processDevConfig {
             ( $tmp, $ssh_port ) = split(/ssh_port\=/, $line );
             ( $ssh_port ) = split(/\,/, $ssh_port );
         }
+	#SSH Options
+	if ( $line =~ /ssh_options/ ) {
+            ( $tmp, $ssh_options ) = split(/ssh_options\=/, $line );
+            ( $ssh_options ) = split(/\,/, $ssh_options );
+	}
 	# SSH Timeout
         if ( $line =~ /ssh_timeout/ ) {
             ( $tmp, $ssh_timeout ) = split(/ssh_timeout\=/, $line );
@@ -417,10 +423,10 @@ sub processDevConfig {
                       devtype => $l_devtype, gethost => $gethost,
                       nobackup => $nobackup, dobackup => $dobackup,
                       authgroup => $authgroup, wifi => $wifi, 
-		      ssh_timeout => $ssh_timeout, ssh_port => $ssh_port, 
-		      login_timeout => $login_timeout };
+		              ssh_timeout => $ssh_timeout, ssh_port => $ssh_port,
+		              ssh_options => $ssh_options, login_timeout => $login_timeout };
 	
-        print "|DEBUG|: Device: $host, fqdn: $fqdn, mac: $nmac, wifi: $wifi, arp: $narp, vrfs: $vrfs, ipv6: $v6, devtype: $l_devtype, authgroup: $authgroup, ssh_port: $ssh_port, ssh_timeout: $ssh_timeout, login_timeout: $login_timeout\n" if $DEBUG>2;
+        print "|DEBUG|: Device: $host, fqdn: $fqdn, mac: $nmac, wifi: $wifi, arp: $narp, vrfs: $vrfs, ipv6: $v6, devtype: $l_devtype, authgroup: $authgroup, ssh_port: $ssh_port, ssh_options: $ssh_options, ssh_timeout: $ssh_timeout, login_timeout: $login_timeout\n" if $DEBUG>2;
 
         return $dref;
     }
@@ -630,6 +636,7 @@ sub get_SSH_session {
     #print "\n\n****DREF TIMEOUT****: $$dref{login_timeout}\n\n";
 
     $ssh_port = $$dref{ssh_port} if $$dref{ssh_port};
+    $ssh_options = $$dref{ssh_options} if $$dref{ssh_options};
     
     if ( !$hostname ){  # verify a hostname is given
         croak("Minimum set of arguments undefined in get_SSH_session\n");
@@ -659,6 +666,7 @@ sub get_SSH_session {
                                         user => $user,
                                         raw_pty => 1,
                                         timeout => $login_timeout,
+					                    ssh_option => $ssh_options
                                         );
         $session->login();
         my @output;
@@ -689,6 +697,7 @@ sub get_SSH_session {
                                                  user => $username2,
                                                  raw_pty => 1,
                                                  timeout => $login_timeout,
+						                        ssh_option => $ssh_options
                                                 );
                 $session->login();
 
@@ -1125,7 +1134,7 @@ sub parseConfig {
     $config->define( "ipv6_file=s", "datadir=s", "skip_port=s%", "use_port=s%", "ssh_timeout=s", "use_fqdn" );
     $config->define( "devuser=s", "devpass=s", "devuser2=s", "devpass2=s", "enablepass=s", "telnet_timeout=s" );
     $config->define( "authgroup=s%", "authgroup_user=s%", "authgroup_pass=s%", "authgroup_enable=s%" );
-    $config->define( "login_timeout=s", "ssh_port=s" );
+    $config->define( "login_timeout=s", "ssh_port=s", "ssh_options=s" );
 
     $config->file( "$config_file" );
 
@@ -1168,6 +1177,11 @@ sub parseConfig {
     if ( $config->ssh_port() ) {
 	$ssh_port = $config->ssh_port();
     }
+
+    # SSH Options
+    if ( $config->ssh_options() ) {
+	    $ssh_options = $config->ssh_options();
+	}
 
     # Login Timeout, fallback to ssh_timeout
     if ( $config->login_timeout() ) {
