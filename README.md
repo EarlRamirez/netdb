@@ -9,6 +9,13 @@
 All credit goes to Jonathan Yantis.
 
 ------------
+
+### About this fork
+
+This fork adds a configurable parameter for additional SSH options. 
+Reason for this is that some older cisco devices only support SHA1 ciphers, so a ssh connection can't be established.
+If your device doesn't support newer ciphers you will get an error like "no matching key exchange method found. Their offer: diffie-hellman-group1-sha1" when trying to connect via openssh.
+
 ### Installation
 
 To install NetDB on a vanilla Red Hat based distribution run the following commands
