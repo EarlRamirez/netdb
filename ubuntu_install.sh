@@ -34,7 +34,8 @@ libproc-queue-perl libnet-mac-vendor-perl libnet-openssh-perl
 
 #42 + 117 packages
 echo "Putting netdb to /opt"
-cp ../netdb /opt
+mkdir /opt/netdb
+cp -r ./* /opt/netdb
 chown -R netdb /opt/netdb/
 chgrp -R netdb /opt/netdb/
 chown netdb /var/log/netdb/
