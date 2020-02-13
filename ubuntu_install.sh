@@ -1,8 +1,10 @@
 ##!/bin/bash
 NETDBUSER="netdb"
 DATABASE="netdb"
-SQLSERVER="mariadb-server"
-SQLCLIENT="mariadb-server"
+SQLSERVER="mysql-server"
+SQLCLIENT="mysql"
+DBUSER="netdb"
+DBPASS="geheim"
 #To make a more easy install on Ubuntu...
 
 #user creation
@@ -19,7 +21,7 @@ if [ $retval -ne 0 ]; then
 fi
 
 #Installing mysql
-sudo apt install mysql-client $SQLSERVER
+sudo apt install $SQLCLIENT $SQLSERVER
 
 
 #apt installs
@@ -36,11 +38,14 @@ libproc-queue-perl libnet-mac-vendor-perl libnet-openssh-perl
 echo "Putting netdb to /opt"
 mkdir /opt/netdb
 cp -r ./* /opt/netdb
-chown -R netdb /opt/netdb/
-chgrp -R netdb /opt/netdb/
+chown -R netdb:netdb /opt/netdb/
+mkdir /var/log/netdb/
 chown netdb /var/log/netdb/
 chgrp www-data /var/log/netdb/
-cp  /opt/netdb/netdb.con /etc
+cp  /opt/netdb/netdb.conf /etc
+
+mkdir /var/lock/netdb/
+chown -R netdb:netdb /var/lock/netdb/
 
 #linking stuff
 echo "Linking executable"
@@ -50,6 +55,20 @@ cp /opt/netdb/extra/netdb-logrotate /etc/logrotate.d/
 
 #init mysql
 echo "creating database"
-sudo mysql < createdb.sql
-sudo mysql netdb < createnetdb.sql
+sudo SQLCLIENT < createdb.sql
+sudo SQLCLIENT netdb < createnetdb.sql
+sudo SQLCLIENT netdb < createuser.sql
+#set user
+./extra/crontab >> /etc/crontab
+
+#cgi
+cp  /opt/netdb/netdb.cgi.conf /etc
+chmod a+r /etc/netdb.cgi.conf
+touch /var/www/netdbReport.csv
+chown www-data:www-data /var/www/netdbReport.csv
+cp netdb/extra/depends/ /var/www/depends
+chown --recursive  www-data:www-data  /var/www/depends
+cp netdb.cgi.pl /usr/cgi-bin
+chown  www-data:www-data /usr/cgi-bin/netdb.cgi.pl
 #disbale user login
+passwd -l netdb
