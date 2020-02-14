@@ -1,3 +1,3 @@
-DROP DATABASE [IF EXISTS] database_name;
+DROP DATABASE IF EXISTS netdb;
 create database netdb;
 use netdb;
