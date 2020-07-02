@@ -1326,7 +1326,7 @@ sub getLLDP {
         print "$scriptName($PID): |DEBUG|: LINE: $line\n" if $DEBUG>5;
 
         # Save local port
-	if ( !($port) && ($line =~ /^Local\sPort\sid:\s([A-Za-z0-9\/]+)/ or $line =~ /^Local\sIntf:\s([A-Za-z0-9\/]+)/) ) {
+        if ( !($port) && ($line =~ /^Local\sPort\sid:\s([A-Za-z0-9\/]+)/ or $line =~ /^Local\sIntf:\s([A-Za-z0-9\/]+)/) ) {
             $port = $1;
             $port = normalizePort($port);
             print "$scriptName($PID): |DEBUG|: Local port with remote dev: $port\n" if $DEBUG>5;
